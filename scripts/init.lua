@@ -7,10 +7,9 @@ local function RequireAll(self)
 end
 local function init(self)
 	modApi:addWeapon_Texts(require(self.scriptPath.."weapons_text"))
-	modApi:appendAsset("img/pushsquad/shield_front_solid.png",self.resourcePath.."img/shield_front_solid.png")
+	modApi:appendAsset("img/units/aliens/shield_1.png",self.resourcePath.."img/shield_solid_1.png")
     RequireAll(self){
         "animations",
-        "singleton_effects",
         "doublepunch",
         "shieldbot",
         "uppercut",
@@ -22,9 +21,10 @@ end
 local function load(self, options, version)
 	modApi:addSquad({"PusherSquad","UpperCutMech","ShieldWallMech","PushMech"},"Pushers","Style over function")
 	modApi:addMissionStartHook(function(m)
-        if m.LiveEnvironment then
-            m.Injected = {}
-        end
+        ResetUppercut(m.LiveEnvironment)
+        -- if m.LiveEnvironment then
+        --     m.LiveEnvironment.Injected = {}
+        -- end
     end)
 end
 

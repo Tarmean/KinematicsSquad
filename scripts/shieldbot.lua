@@ -18,7 +18,7 @@ Prime_ShieldWall = Skill:new{
 	PowerCost = 1,
 	Upgrades = 2,
 	--UpgradeList = { "Dash",  "+2 Damage"  },
-	UpgradeCost = { 3 , 1 },
+	UpgradeCost = { 2 , 3 },
 	TipImage = StandardTips.Melee,
     WallSize = 1,
     Shield = "PawnShield"
@@ -38,14 +38,25 @@ function Prime_ShieldWall:GetSkillEffect(p1, p2)
     local dir = GetDirection(p2 - p1)
     local dir2 = (dir+1)% 4
     local lv = DIR_VECTORS[dir2]
-    
-    DoIt(ret, self.Shield, dir, p2)
+
+    local collision = DoPush(p2, ret, dir)
     for i = 1, self.WallSize do
-        ret:AddDelay(0.06)
-        local p3 = p2 + (lv * i)
-        DoIt(ret, self.Shield, dir, p3)
-        local p3 = p2  - (lv*i)
-        DoIt(ret, self.Shield, dir, p3)
+        local l = DoPush(p2 + (lv * i), ret, dir)
+        local r = DoPush(p2 - (lv * i), ret, dir)
+        collision = collision or l or r
+    end
+
+    if collision then
+        ret:AddDelay(FULL_DELAY)
+    end
+    
+    -- monadic getskilleffect might be neat
+
+    DoShield(p2, ret, self.Shield)
+    for i = 1, self.WallSize do
+        ret:AddDelay(0.09)
+        DoShield(p2 + (lv * i), ret, self.Shield)
+        DoShield(p2 - (lv * i), ret, self.Shield)
     end
 
     return ret
@@ -53,42 +64,38 @@ end
 function Prime_ShieldWall:GetTargetArea(point)
 	return Board:GetSimpleReachable(point, 1, self.CornersAllowed)
 end
-function DoIt(ret, shield, dir, p)
+function DoPush(p, ret, dir)
     local pawn = Board:GetPawn(p)
-    local dirv = DIR_VECTORS[dir]
+    local collision = false
     if pawn then
-        if pawn:GetTeam() == TEAM_PLAYER then
-            local damage = SpaceDamage(p, DAMAGE_ZERO)
-            damage.iShield = 1
-            ret:AddDamage(damage)
+        local p_next = p + DIR_VECTORS[dir]
+        if not Board:IsBlocked(p_next, pawn:GetPathProf()) and not pawn:IsGuarding() then
+            ret:AddCharge(Board:GetSimplePath(p, p_next), NO_DELAY)
         else
-            local damage = SpaceDamage(p, DAMAGE_ZERO)
-            damage.iPush = dir
-            damage.sAnimation = "airpush_"..dir
-            ret:AddDamage(damage)
-            ret:AddDelay(FULL_DELAY)
-            local arg = "SpawnShield( \""..shield .. "\","..p:GetString()..")"
-            ret:AddScript(arg)
-        end
-    else 
-        local terr = Board:GetTerrain(p)
-        if terr == TERRAIN_MOUNTAIN or terr == TERRAIN_BUILDING then
-            local damage = SpaceDamage(p, DAMAGE_ZERO)
-            damage.iShield = 1
-            ret:AddDamage(damage)
-        else
-            local damage = SpaceDamage(p, DAMAGE_ZERO)
-            damage.sPawn = shield
-            ret:AddDamage(damage)
-            ret:AddScript("Board:GetPawn("..p:GetString().."):FireWeapon("..p:GetString()..", 1)")
+            collision = Board:IsValid(p_next)
         end
     end
+    local damage = SpaceDamage(p, DAMAGE_ZERO, dir)
+    damage.sImageMark = "combat/shield_front.png"
+    damage.sAnimation = "airpush_"..dir
+    ret:AddDamage(damage)
+    return collision
 end
-
-function SpawnShield(shield, p)
+function DoShield(p, ret, shield)
+    local damage = SpaceDamage(p)
+    damage.sScript = "DoSpawn("..p:GetString() .. ",\""..shield.."\")"
+    damage.sSound = "/props/shield_activated"
+    ret:AddDamage(damage)
+    ret:AddBounce(p, -3)
+end
+function DoSpawn(p, shield)
     if not Board:IsBlocked(p, PATH_GROUND) then
         local pawn = PAWN_FACTORY:CreatePawn(shield)
         Board:AddPawn(pawn, p)
         pawn:FireWeapon(p, 1)
+    else
+        local dam = SpaceDamage(p)
+        dam.iShield = 1
+        Board:DamageSpace(dam)
     end
 end

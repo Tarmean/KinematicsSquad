@@ -1,13 +1,4 @@
-ANIMS.shield1 = Animation:new{
-    Image = "pushsquad/shield_front_solid.png",
-    PosX = -23,
-    PosY = -4,
-}
-ANIMS.shield1a = ANIMS.shield1:new{
-    NumFrames = 1,
-    Loop = true,
-    Time = 0.3,
-}
+ANIMS.shield1 = 	ANIMS.BaseUnit:new{ Image = "units/aliens/shield_1.png", PosX = -23, PosY = -4 }
 ANIMS.shield1e = Animation:new{
     Image = "combat/shield_front_turnon.png",
     PosX = -23,

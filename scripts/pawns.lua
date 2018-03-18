@@ -1,4 +1,4 @@
-ShieldWallMech = Pawn:new {
+ShieldWallMech = {
 	Name = "Wall Mech",
 	Class = "Prime",
 	Health = 3,
@@ -12,7 +12,7 @@ ShieldWallMech = Pawn:new {
 	Massive = true,
 }
 AddPawn("ShieldWallMech")
-UpperCutMech = Pawn:new {
+UpperCutMech = {
 	Name = "Uppercut Mech",
 	Class = "Brute",
 	Health = 3,
@@ -30,22 +30,23 @@ AddPawn("UpperCutMech")
 PushMech = {
 	Name = "Push Mech",
 	Class = "Science",
-    MoveSpeed = 3,
+    MoveSpeed = 4,
     Health = 3,
-    Image = "MechPunch",
-    ImageOffset = 0,
+    Image = "MechScience",
+    ImageOffset = 5,
 	SkillList = { "Prime_Pushmech" },
-	SoundLocation = "/mech/prime/punch_mech/",
+	SoundLocation = "/mech/science/science_mech/",
 	DefaultTeam = TEAM_PLAYER,
 	ImpactMaterial = IMPACT_METAL,
 	Massive = true,
+    Flying = true,
 }
 AddPawn("PushMech")
 
-PawnShield = Pawn:new {
+PawnShield = {
     SkillList = { "Suicide" },
-    Class  = "Prime",
 	Name = "Shield",
+    Class  = "Prime",
 	Health = 1,
 	MoveSpeed = 0,
 	Image = "shield1",
@@ -57,14 +58,14 @@ PawnShield = Pawn:new {
 	Pushable = false,
 }
 AddPawn("PawnShield") 
-PermShield = Pawn:new {
+PermShield = {
     Class  = "Prime",
 	Name = "Shield",
 	Health = 1,
 	MoveSpeed = 0,
 	Image = "shield1",
 	ImageOffset = 8,
-	DefaultTeam = TEAM_NONE,
+	DefaultTeam = TEAM_PLAYER,
 	Neutral = true,
 	ImpactMaterial = IMPACT_SHIELD,
 	Massive = false,
@@ -81,7 +82,13 @@ Suicide = Skill:new {
 }
 function Suicide:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
-    ret:AddQueuedScript("Board:RemovePawn("..p1:GetString()..")")
+    local damage = SpaceDamage(p1)
+    damage.bHide= true
+    damage.bHidePath= true
+    damage.sScript = "Board:RemovePawn("..p1:GetString()..")"
+    -- damage.sSound = "/props/shield_destroyed"
+    damage.sSound = "impact/generic/general"
+    ret:AddQueuedDamage(damage)
     return ret
 end
 function Suicide:GetTargetArea(p)
@@ -92,3 +99,4 @@ end
 function Suicide:GetTargetScore(p1, p2)
     return 100
 end
+

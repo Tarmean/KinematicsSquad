@@ -1,5 +1,4 @@
 -- log = require "log"
--- log.outfile = "C:/Users/Cyril/Desktop/log.log"
 -- log.level = "warn"
 -- local inspect = require("inspect")
 
@@ -176,6 +175,8 @@ function Tracked:Setup()
     while current do
         if current.state == ST_PAUSED then
             current.state = ST_ACTIVE
+        elseif current.state == ST_PUSHED then
+            break
         end
         current = self:Get(current.pos + self.dirv)
     end
@@ -210,13 +211,9 @@ end
 
 TERR_COLLISION = 1
 TERR_DROPPED = 2
--- Maybe add TERR_BORDER for animation purposes? should we damage buildings?
--- for some reason the definition is missing lua side
--- wtf is terrain 6
-local PATH_FLIER = 1
 local PATH_LEAPER = 6
 INVALID_TERRAINS =
-    { [PATH_FLIER] = -- 1
+    { [PATH_FLYER] = -- 1
         { [TERRAIN_BUILDING] = TERR_COLLISION
         , [TERRAIN_MOUNTAIN] = TERR_COLLISION
         }
@@ -246,13 +243,11 @@ INVALID_TERRAINS =
         { [TERRAIN_BUILDING] = TERR_COLLISION
         , [TERRAIN_MOUNTAIN] = TERR_COLLISION
         }
+    -- TODO: should this affect collision while pushing?
     , [PATH_ROADRUNNER] = -- 4
         { [TERRAIN_BUILDING] = TERR_COLLISION
         , [TERRAIN_MOUNTAIN] = TERR_COLLISION
-        , [TERRAIN_ACID] = TERR_DROPPED
-        , [TERRAIN_HOLE] = TERR_DROPPED
-        , [TERRAIN_LAVA] = TERR_DROPPED
-        , [TERRAIN_WATER] = TERR_DROPPED
+        , [TERRAIN_HOLE] = TERR_COLLISION
         }
     }
 
@@ -271,7 +266,6 @@ function InvalidTerrain(pathtype, pos)
     end
     local table = INVALID_TERRAINS[pathtype] 
     if not table then
-        -- log.error("invalid pathtype: " .. pathtype .. "! ")
         table = INVALID_TERRAINS[PATH_GROUND]
     end
     local terr = Board:GetTerrain(pos)
