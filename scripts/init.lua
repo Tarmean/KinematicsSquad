@@ -7,6 +7,7 @@ local function RequireAll(self)
 end
 local function init(self)
 	modApi:addWeapon_Texts(require(self.scriptPath.."weapons_text"))
+    modApi:addWeapon_Texts{ALERT_COLLISION = "COLLISION DAMAGE"}
 	modApi:appendAsset("img/units/aliens/shield_1.png",self.resourcePath.."img/shield_solid_1.png")
     RequireAll(self){
         "animations",

@@ -39,22 +39,32 @@ function Prime_ShieldWall:GetSkillEffect(p1, p2)
     local dir2 = (dir+1)% 4
     local lv = DIR_VECTORS[dir2]
 
-    local collision = DoPush(p2, ret, dir)
+
+    local chargepaths = {}
+    LOG("1")
+    DoPush(p2, chargepaths, ret,  dir)
+    LOG("2")
     for i = 1, self.WallSize do
-        local l = DoPush(p2 + (lv * i), ret, dir)
-        local r = DoPush(p2 - (lv * i), ret, dir)
-        collision = collision or l or r
+        LOG("3")
+        DoPush(p2 + (lv * i), chargepaths, ret, dir)
+        LOG("4")
+        DoPush(p2 - (lv * i), chargepaths, ret, dir)
     end
 
-    if collision then
-        ret:AddDelay(FULL_DELAY)
+        LOG("5")
+    ret:AddDelay(FULL_DELAY)
+
+        LOG("7")
+    for _,path in ipairs(chargepaths) do
+        LOG("6")
+        ret:AddCharge(path, NO_DELAY)
     end
     
     -- monadic getskilleffect might be neat
 
     DoShield(p2, ret, self.Shield)
     for i = 1, self.WallSize do
-        ret:AddDelay(0.09)
+        ret:AddDelay(FULL_DELAY)
         DoShield(p2 + (lv * i), ret, self.Shield)
         DoShield(p2 - (lv * i), ret, self.Shield)
     end
@@ -64,22 +74,22 @@ end
 function Prime_ShieldWall:GetTargetArea(point)
 	return Board:GetSimpleReachable(point, 1, self.CornersAllowed)
 end
-function DoPush(p, ret, dir)
+function DoPush(p, ls, ret, dir)
     local pawn = Board:GetPawn(p)
-    local collision = false
+        LOG("8")
     if pawn then
+        LOG("9")
         local p_next = p + DIR_VECTORS[dir]
         if not Board:IsBlocked(p_next, pawn:GetPathProf()) and not pawn:IsGuarding() then
-            ret:AddCharge(Board:GetSimplePath(p, p_next), NO_DELAY)
-        else
-            collision = Board:IsValid(p_next)
+        LOG("9")
+            ls[#ls+1] = Board:GetSimplePath(p, p_next)
+        LOG("10")
         end
     end
     local damage = SpaceDamage(p, DAMAGE_ZERO, dir)
     damage.sImageMark = "combat/shield_front.png"
     damage.sAnimation = "airpush_"..dir
     ret:AddDamage(damage)
-    return collision
 end
 function DoShield(p, ret, shield)
     local damage = SpaceDamage(p)

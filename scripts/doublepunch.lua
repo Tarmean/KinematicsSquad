@@ -36,12 +36,15 @@ function Prime_Pushmech:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
     local dir = GetDirection(p2 - p1)
     local dirv = DIR_VECTORS[dir]
+
+    ret:AddSound("/weapons/charge")
     
     local state0 = Tracked:New(p1, dirv)
     local final_state = state0:GetPositions(self.PathSize)
 
     for i = #final_state, 1, -1 do
         local p = final_state[i]
+        ret:AddDelay(FULL_DELAY)
         DoAction(p, ret)
 
     end
