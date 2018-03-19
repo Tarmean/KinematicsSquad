@@ -42,13 +42,13 @@ function Prime_ShieldWall:GetSkillEffect(p1, p2)
 
     local chargepaths = {}
     LOG("1")
-    DoPush(p2, chargepaths, ret,  dir)
+    Prime_ShieldWall.DoPush(p2, chargepaths, ret,  dir)
     LOG("2")
     for i = 1, self.WallSize do
         LOG("3")
-        DoPush(p2 + (lv * i), chargepaths, ret, dir)
+        Prime_ShieldWall.DoPush(p2 + (lv * i), chargepaths, ret, dir)
         LOG("4")
-        DoPush(p2 - (lv * i), chargepaths, ret, dir)
+        Prime_ShieldWall.DoPush(p2 - (lv * i), chargepaths, ret, dir)
     end
 
         LOG("5")
@@ -62,11 +62,11 @@ function Prime_ShieldWall:GetSkillEffect(p1, p2)
     
     -- monadic getskilleffect might be neat
 
-    DoShield(p2, ret, self.Shield)
+    Prime_ShieldWall.DoShield(p2, ret, self.Shield)
     for i = 1, self.WallSize do
         ret:AddDelay(FULL_DELAY)
-        DoShield(p2 + (lv * i), ret, self.Shield)
-        DoShield(p2 - (lv * i), ret, self.Shield)
+        Prime_ShieldWall.DoShield(p2 + (lv * i), ret, self.Shield)
+        Prime_ShieldWall.DoShield(p2 - (lv * i), ret, self.Shield)
     end
 
     return ret
@@ -74,7 +74,7 @@ end
 function Prime_ShieldWall:GetTargetArea(point)
 	return Board:GetSimpleReachable(point, 1, self.CornersAllowed)
 end
-function DoPush(p, ls, ret, dir)
+function Prime_ShieldWall.DoPush(p, ls, ret, dir)
     local pawn = Board:GetPawn(p)
         LOG("8")
     if pawn then
@@ -91,14 +91,14 @@ function DoPush(p, ls, ret, dir)
     damage.sAnimation = "airpush_"..dir
     ret:AddDamage(damage)
 end
-function DoShield(p, ret, shield)
+function Prime_ShieldWall.DoShield(p, ret, shield)
     local damage = SpaceDamage(p)
-    damage.sScript = "DoSpawn("..p:GetString() .. ",\""..shield.."\")"
+    damage.sScript = "Prime_ShieldWall.DoSpawn("..p:GetString() .. ",\""..shield.."\")"
     damage.sSound = "/props/shield_activated"
     ret:AddDamage(damage)
     ret:AddBounce(p, -3)
 end
-function DoSpawn(p, shield)
+function Prime_ShieldWall.DoSpawn(p, shield)
     if not Board:IsBlocked(p, PATH_GROUND) then
         local pawn = PAWN_FACTORY:CreatePawn(shield)
         Board:AddPawn(pawn, p)

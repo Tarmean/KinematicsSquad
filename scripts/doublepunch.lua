@@ -15,7 +15,7 @@ Prime_Pushmech = Skill:new{
 	Icon = "weapons/prime_punchmech.png",
 	Rarity = 3,
 	Explosion = "",
-	LaunchSound = "/weapons/titan_fist",
+	-- LaunchSound = "/weapons/titan_fist",
 	Range = 1, -- Tooltip?
     PathSize = INT_MAX,
     Damage = 0,
@@ -37,34 +37,40 @@ function Prime_Pushmech:GetSkillEffect(p1, p2)
     local dir = GetDirection(p2 - p1)
     local dirv = DIR_VECTORS[dir]
 
-    ret:AddSound("/weapons/charge")
     
     local state0 = Tracked:New(p1, dirv)
     local final_state = state0:GetPositions(self.PathSize)
 
     for i = #final_state, 1, -1 do
         local p = final_state[i]
-        ret:AddDelay(FULL_DELAY)
-        DoAction(p, ret)
+        local moved = p.path:size() > 1
+        if moved then
+            ret:AddSound("/weapons/charge")
+        end
+        Prime_Pushmech.DoAction(p, ret)
+
+        if moved then
+            Prime_Pushmech.AddTrail(p, dir, ret)
+            for j = i, #final_state do
+                local p = final_state[j]
+                ret:AddBounce(p.pos, -5)
+                ret:AddEmitter(p.pos, "Emitter_Burst")
+            end
+        end
+
+        if i > 1 then
+            ret:AddDelay(FULL_DELAY)
+            ret:AddDelay(PROJ_DELAY)
+        end
 
     end
-    for i = 0, p1:Manhattan(final_state[1].pos)-1 do
-        ret:AddBounce(p1 + DIR_VECTORS[dir]*i, -3)
-        local damage = SpaceDamage(p1 + DIR_VECTORS[dir]*i, 0)
-        damage.sAnimation = "exploout0_"..(dir)%4
-        ret:AddDamage(damage)
-        ret:AddDelay(0.06)
-    end
-    for _, p in ipairs(final_state) do
-		ret:AddBounce(p.pos, -5)
-        ret:AddEmitter(p.pos, "Emitter_Burst")
-    end
+
 
     ret:AddBoardShake(0.5)
     ret:AddSound("/impact/generic/explosion")
     return ret
 end
-function DoAction(p, ret)
+function Prime_Pushmech.DoAction(p, ret)
     if p.state == ST_DROPPED then
         -- this abuses a bug in the preview code
         -- the preview shows the unit dieing from DAMAGE_DEATH, the execution shows the unit diving charging to its death
@@ -75,6 +81,17 @@ function DoAction(p, ret)
         -- we do the damage at orig_pos because WEIRD THINGS happen to the preview if we damage at pos.
         -- this sucks because fires and smoke icons are visible when we suppress them
         ret:AddCharge(p.path, NO_DELAY)
+    end
+end
+
+function Prime_Pushmech.AddTrail(tracked, dir, ret)
+    local path = extract_table(tracked.path)
+    for _,p in ipairs(path) do
+        ret:AddBounce(p, -3)
+        local damage = SpaceDamage(p, 0)
+        damage.sAnimation = "exploout0_"..(dir)%4
+        ret:AddDamage(damage)
+        ret:AddDelay(0.06)
     end
 end
 
@@ -123,7 +140,7 @@ Tracked.__index = Tracked
 function Tracked:New(p0, dirv)
     local o = {}
     setmetatable(o, self)
-    o[1] = mkMarker(Board:GetPawn(p0))
+    o[1] = Tracked.mkMarker(Board:GetPawn(p0))
     o.obstacles = {}
     o.dirv = dirv
     return o
@@ -159,7 +176,7 @@ function Tracked:Get(p)
     end
     r = self:GetUnknown(p)
     if r then
-        r = mkMarker(r)
+        r = Tracked.mkMarker(r)
         self[#self+1] = r
         return r
     end
@@ -202,7 +219,7 @@ function findBy(ls, pred)
     return nil
 end
 
-function mkMarker(pawn)
+function Tracked.mkMarker(pawn)
     local list = PointList()
     local pos = pawn:GetSpace()
     list:push_back(pos)
@@ -255,13 +272,13 @@ INVALID_TERRAINS =
     }
 
 function Tracked:CheckTerrain(path, pos)
-    local result = InvalidTerrain(path, pos)
+    local result = Tracked.InvalidTerrain(path, pos)
     if result == TERR_COLLISION then
         self.obstacles[#self.obstacles+1] = pos
     end
     return result
 end
-function InvalidTerrain(pathtype, pos)
+function Tracked.InvalidTerrain(pathtype, pos)
     local pathtype = pathtype % 16
 
     if not Board:IsValid(pos) then

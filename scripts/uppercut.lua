@@ -31,6 +31,7 @@ Prime_Uppercut_AB = Prime_Uppercut:new{
     Push = true,
     CollisionDamage = 3
 }
+
 function Prime_Uppercut:GetSkillEffect(p1, p2)
     local result = SkillEffect()
 
@@ -43,7 +44,7 @@ function Prime_Uppercut:GetSkillEffect(p1, p2)
 
     local pawn = Board:GetPawn(p2)
     if pawn and not pawn:IsGuarding() then
-        result:AddScript("DoItAt(" .. p2:GetString() .. ", " .. tostring(self.Push) .. ", " .. tostring(self.CollisionDamage) .. ")")
+        result:AddScript("Prime_Uppercut.DoItAt(" .. p2:GetString() .. ", " .. tostring(self.Push) .. ", " .. tostring(self.CollisionDamage) .. ")")
 
         result:AddDelay(0.125)
         if self.Push then
@@ -51,7 +52,7 @@ function Prime_Uppercut:GetSkillEffect(p1, p2)
             local str_dirs = {"up","right","down","left"}
             for i = DIR_START, DIR_END do
                 fakearr.loc = p2 + DIR_VECTORS[i]
-                if DoesPushCollide(p2, i) then
+                if Prime_Uppercut.DoesPushCollide(p2, i) then
                     fakearr.sImageMark = "combat/arrow_hit_"..str_dirs[i+1]..".png"
                 else
                     fakearr.sImageMark = "combat/arrow_"..str_dirs[i+1]..".png"
@@ -65,7 +66,7 @@ function Prime_Uppercut:GetSkillEffect(p1, p2)
     return result
 end
 
-function DoesPushCollide(p0, dir)
+function Prime_Uppercut.DoesPushCollide(p0, dir)
     local dirv = DIR_VECTORS[dir]
     local p = p0 + dirv
     local p_next = p + dirv
@@ -76,7 +77,7 @@ function Prime_Uppercut:GetTargetArea(point)
 	return Board:GetSimpleReachable(point, 1, self.CornersAllowed)
 end
 
-function RestoreAfterPunch(state)
+function Prime_Uppercut.RestoreAfterPunch(state)
     local pawn = Board:GetPawn(state.Id)
     if pawn then
         pawn:SetInvisible(false)
@@ -107,7 +108,7 @@ function GetEffect(state)
     end
     eff:AddEmitter(state.Space, "Emitter_Unit_Crashed")
     eff:AddBoardShake(1)
-    eff:AddScript("RestoreAfterPunch("..save_table(state)..")")
+    eff:AddScript("Prime_Uppercut.RestoreAfterPunch("..save_table(state)..")")
     if state.DoPush then
         local push = SpaceDamage()
         for dir = DIR_START, DIR_END do
@@ -136,7 +137,7 @@ Emitter_Unit_Crashed = Emitter_Pod:new{
 	angle = 255,
     timer = 0.5,
 }
-function DoItAt(p, doPush, extradamage)
+function Prime_Uppercut.DoItAt(p, doPush, extradamage)
     local pawn = Board:GetPawn(p)
     LOG("1")
 
@@ -160,12 +161,12 @@ function DoItAt(p, doPush, extradamage)
     --     visual.loc = p + DIR_VECTORS[dir]
     --     launcheff:AddDamage(visual)
     -- end
-    launcheff:AddScript( "HideUnit("..p:GetString()..")")
+    launcheff:AddScript( "Prime_Uppercut.HideUnit("..p:GetString()..")")
     LOG("4")
 
-    local state = MkState("combat/tile_icon/tile_lightning.png", "lightning", p, doPush, extradamage, pawn:GetPathProf(), pawn:GetId())
+    local state = Prime_Uppercut.MkState("combat/tile_icon/tile_lightning.png", "lightning", p, doPush, extradamage, pawn:GetPathProf(), pawn:GetId())
     LOG("5")
-    launcheff:AddScript("QueueEvent("..save_table(state)..")")
+    launcheff:AddScript("Prime_Uppercut.QueueEvent("..save_table(state)..")")
     LOG("6")
 
     local liftoff = SpaceDamage(Point(-1-p.y, -1-p.x))
@@ -180,7 +181,7 @@ function DoItAt(p, doPush, extradamage)
     Board:AddEffect(launcheff)
 end
 
-function HideUnit(p)
+function Prime_Uppercut.HideUnit(p)
     local pawn = Board:GetPawn(p)
     pawn:SetSpace(Point(32,32))
     pawn:SetActive(false)
@@ -255,10 +256,10 @@ function ResetUppercut(env)
     PendingEvents = {}
 end
 
-function QueueEvent(effect)
+function Prime_Uppercut.QueueEvent(effect)
     PendingEvents[#PendingEvents+1] = effect
 end
-function MkState(CombatIcon, Desc, Space, DoPush, CollisionDamage, PathProf, Id)
+function Prime_Uppercut.MkState(CombatIcon, Desc, Space, DoPush, CollisionDamage, PathProf, Id)
     return {
         CombatIcon = CombatIcon,
         Desc = Desc,
