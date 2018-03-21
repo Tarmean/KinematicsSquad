@@ -18,7 +18,7 @@ Prime_ShieldWall = Skill:new{
 	PowerCost = 1,
 	Upgrades = 2,
 	--UpgradeList = { "Dash",  "+2 Damage"  },
-	UpgradeCost = { 2 , 3 },
+	UpgradeCost = { 3 , 2 },
 	TipImage = StandardTips.Melee,
     WallSize = 1,
     Shield = "PawnShield"
@@ -41,22 +41,15 @@ function Prime_ShieldWall:GetSkillEffect(p1, p2)
 
 
     local chargepaths = {}
-    LOG("1")
     Prime_ShieldWall.DoPush(p2, chargepaths, ret,  dir)
-    LOG("2")
     for i = 1, self.WallSize do
-        LOG("3")
         Prime_ShieldWall.DoPush(p2 + (lv * i), chargepaths, ret, dir)
-        LOG("4")
         Prime_ShieldWall.DoPush(p2 - (lv * i), chargepaths, ret, dir)
     end
 
-        LOG("5")
     ret:AddDelay(FULL_DELAY)
 
-        LOG("7")
     for _,path in ipairs(chargepaths) do
-        LOG("6")
         ret:AddCharge(path, NO_DELAY)
     end
     
@@ -76,18 +69,25 @@ function Prime_ShieldWall:GetTargetArea(point)
 end
 function Prime_ShieldWall.DoPush(p, ls, ret, dir)
     local pawn = Board:GetPawn(p)
-        LOG("8")
+    local show_shield = false
     if pawn then
-        LOG("9")
         local p_next = p + DIR_VECTORS[dir]
-        if not Board:IsBlocked(p_next, pawn:GetPathProf()) and not pawn:IsGuarding() then
-        LOG("9")
+        local guard = pawn:IsGuarding()
+        local collision =  not guard and Board:IsBlocked(p_next, pawn:GetPathProf()) 
+        local moved = not collision and not guard
+        if moved then
             ls[#ls+1] = Board:GetSimplePath(p, p_next)
-        LOG("10")
         end
+        local push_free = moved or (collision and (pawn:GetHealth() == 1))
+        local friendly_building = guard and pawn:IsPlayer()
+        show_shield = push_free or friendly_building
+    else
+        show_shield = true
     end
     local damage = SpaceDamage(p, DAMAGE_ZERO, dir)
-    damage.sImageMark = "combat/shield_front.png"
+    if show_shield then
+        damage.sImageMark = "combat/shield_front.png"
+    end
     damage.sAnimation = "airpush_"..dir
     ret:AddDamage(damage)
 end
@@ -103,9 +103,12 @@ function Prime_ShieldWall.DoSpawn(p, shield)
         local pawn = PAWN_FACTORY:CreatePawn(shield)
         Board:AddPawn(pawn, p)
         pawn:FireWeapon(p, 1)
-    else
-        local dam = SpaceDamage(p)
-        dam.iShield = 1
-        Board:DamageSpace(dam)
+    else 
+        local pawn = Board:GetPawn(p)
+        if not pawn or (pawn:IsGuarding() and pawn:IsPlayer()) then
+            local dam = SpaceDamage(p)
+            dam.iShield = 1
+            Board:DamageSpace(dam)
+        end
     end
 end

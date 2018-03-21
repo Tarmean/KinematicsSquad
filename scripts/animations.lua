@@ -11,3 +11,11 @@ ANIMS.shield1d = ANIMS.Shield_Emerge:new{
     Image = "combat/shield_front_turnoff.png",
     Time = 0.05,
 }
+
+
+ANIMS.MechPush = ANIMS.MechUnit:new { Image = "units/player/mech_push.png", PosX = -17, PosY = -1 }
+ANIMS.MechPusha = ANIMS.MechPush:new {Image = "units/player/mech_push_a.png", PosX = -17, PosY = -1, NumFrames = 4}
+ANIMS.MechPushw = ANIMS.MechPush:new {}
+ANIMS.MechPush_broken = ANIMS.MechPush:new {}
+ANIMS.MechPushw_broken = ANIMS.MechPush:new {}
+ANIMS.MechPush_ns = ANIMS.MechPush:new {Image = "units/player/mech_push_ns.png"}

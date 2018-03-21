@@ -3,6 +3,7 @@
 -- local log = require("log")
 -- log.level = "warn"
 local img = "effects/shotup_fireball.png"
+-- delay if no target under?
 
 Prime_Uppercut = Skill:new{
 	Class = "Brute",
@@ -10,25 +11,27 @@ Prime_Uppercut = Skill:new{
 	Rarity = 1,
 	Shield = 0,
 	Damage = 2,
-    Push = false,
+    -- Push = false,
 	CollisionDamage = 0,
 	FriendlyDamage = true,
 	Cost = "low",
 	PowerCost = 2,
 	Upgrades = 2,
-	UpgradeCost = {1,3},
+	UpgradeCost = {3,2},
 	Range = 1, --TOOLTIP INFO
 	LaunchSound = "/weapons/shift",
 	TipImage = StandardTips.Melee,
 }
 Prime_Uppercut_A = Prime_Uppercut:new{
-    Push = true
+    Damage = 3,
+    -- Push = true
 }
 Prime_Uppercut_B = Prime_Uppercut:new{
     CollisionDamage = 3
 }
 Prime_Uppercut_AB = Prime_Uppercut:new{
-    Push = true,
+    -- Push = true,
+    Damage = 3,
     CollisionDamage = 3
 }
 
@@ -44,22 +47,22 @@ function Prime_Uppercut:GetSkillEffect(p1, p2)
 
     local pawn = Board:GetPawn(p2)
     if pawn and not pawn:IsGuarding() then
-        result:AddScript("Prime_Uppercut.DoItAt(" .. p2:GetString() .. ", " .. tostring(self.Push) .. ", " .. tostring(self.CollisionDamage) .. ")")
+        result:AddScript("Prime_Uppercut.DoItAt(" .. p2:GetString() .. ", " .. tostring(self.Damage) .. ", " .. tostring(self.CollisionDamage) .. ")")
 
         result:AddDelay(0.125)
-        if self.Push then
-            local fakearr = SpaceDamage(p2, DAMAGE_ZERO)
-            local str_dirs = {"up","right","down","left"}
-            for i = DIR_START, DIR_END do
-                fakearr.loc = p2 + DIR_VECTORS[i]
-                if Prime_Uppercut.DoesPushCollide(p2, i) then
-                    fakearr.sImageMark = "combat/arrow_hit_"..str_dirs[i+1]..".png"
-                else
-                    fakearr.sImageMark = "combat/arrow_"..str_dirs[i+1]..".png"
-                end
-                result:AddDamage(fakearr)
-            end
-        end
+        -- if self.Push then
+        --     local fakearr = SpaceDamage(p2, DAMAGE_ZERO)
+        --     local str_dirs = {"up","right","down","left"}
+        --     for i = DIR_START, DIR_END do
+        --         fakearr.loc = p2 + DIR_VECTORS[i]
+        --         if Prime_Uppercut.DoesPushCollide(p2, i) then
+        --             fakearr.sImageMark = "combat/arrow_hit_"..str_dirs[i+1]..".png"
+        --         else
+        --             fakearr.sImageMark = "combat/arrow_"..str_dirs[i+1]..".png"
+        --         end
+        --         result:AddDamage(fakearr)
+        --     end
+        -- end
     end
     result:AddDamage(SpaceDamage(p2, self.Damage))
 
@@ -109,17 +112,17 @@ function GetEffect(state)
     eff:AddEmitter(state.Space, "Emitter_Unit_Crashed")
     eff:AddBoardShake(1)
     eff:AddScript("Prime_Uppercut.RestoreAfterPunch("..save_table(state)..")")
-    if state.DoPush then
-        local push = SpaceDamage()
-        for dir = DIR_START, DIR_END do
-            push.loc = state.Space + DIR_VECTORS[dir]
-            push.sAnimation = "airpush_"..dir
-            push.iPush = dir
-            eff:AddDamage(push)
-        end
-    end
+    -- if state.DoPush then
+    --     local push = SpaceDamage()
+    --     for dir = DIR_START, DIR_END do
+    --         push.loc = state.Space + DIR_VECTORS[dir]
+    --         push.sAnimation = "airpush_"..dir
+    --         push.iPush = dir
+    --         eff:AddDamage(push)
+    --     end
+    -- end
     local extra = Board:IsBlocked(state.Space, state.PathProf) and state.CollisionDamage or 0
-    dam = SpaceDamage(state.Space, extra+2)
+    dam = SpaceDamage(state.Space, extra+state.Damage)
     dam.sAnimation = "explo_fire1"
     if extra > 0 then
         dam.sScript = "Board:AddAlert("..state.Space:GetString()..", \"ALERT_COLLISION\")"
@@ -128,23 +131,11 @@ function GetEffect(state)
     return eff
 end
 
---For the pod screen
-Emitter_Unit_Crashed = Emitter_Pod:new{
-	burst_count = 10,
-	lifespan = 2.2,
-	speed = 1.75,
-	variance = 30,
-	angle = 255,
-    timer = 0.5,
-}
-function Prime_Uppercut.DoItAt(p, doPush, extradamage)
+function Prime_Uppercut.DoItAt(p, damage, extradamage)
     local pawn = Board:GetPawn(p)
-    LOG("1")
 
-    LOG("2")
 
     local launcheff = SkillEffect()
-    LOG("3")
     launcheff.piOrigin = p
 
     -- local launchprep = SpaceDamage(p)
@@ -162,21 +153,16 @@ function Prime_Uppercut.DoItAt(p, doPush, extradamage)
     --     launcheff:AddDamage(visual)
     -- end
     launcheff:AddScript( "Prime_Uppercut.HideUnit("..p:GetString()..")")
-    LOG("4")
 
-    local state = Prime_Uppercut.MkState("combat/tile_icon/tile_lightning.png", "lightning", p, doPush, extradamage, pawn:GetPathProf(), pawn:GetId())
-    LOG("5")
+    local state = Prime_Uppercut.MkState("combat/tile_icon/tile_lightning.png", "lightning", p, damage, extradamage, pawn:GetPathProf(), pawn:GetId())
     launcheff:AddScript("Prime_Uppercut.QueueEvent("..save_table(state)..")")
-    LOG("6")
 
     local liftoff = SpaceDamage(Point(-1-p.y, -1-p.x))
     liftoff.sSound = "/props/pod_incoming"
     launcheff:AddAnimation(p, "splash_3")
     -- launcheff:AddBounce(p, 5)
-    LOG("7")
     -- launcheff:AddEmitter(p, "Emitter_Missile")
     launcheff:AddArtillery(liftoff, img)
-    LOG("8")
 
     Board:AddEffect(launcheff)
 end
@@ -259,12 +245,12 @@ end
 function Prime_Uppercut.QueueEvent(effect)
     PendingEvents[#PendingEvents+1] = effect
 end
-function Prime_Uppercut.MkState(CombatIcon, Desc, Space, DoPush, CollisionDamage, PathProf, Id)
+function Prime_Uppercut.MkState(CombatIcon, Desc, Space, Damage, CollisionDamage, PathProf, Id)
     return {
         CombatIcon = CombatIcon,
         Desc = Desc,
         Space = Space,
-        DoPush = DoPush,
+        Damage = Damage,
         CollisionDamage = CollisionDamage,
         Id = Id,
         PathProf = PathProf

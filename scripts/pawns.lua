@@ -31,9 +31,9 @@ PushMech = {
 	Name = "Push Mech",
 	Class = "Science",
     MoveSpeed = 4,
-    Health = 3,
-    Image = "MechScience",
-    ImageOffset = 5,
+    Health = 2,
+    Image = "MechPush",
+    ImageOffset = 2,
 	SkillList = { "Prime_Pushmech" },
 	SoundLocation = "/mech/science/science_mech/",
 	DefaultTeam = TEAM_PLAYER,
@@ -56,24 +56,41 @@ PawnShield = {
 	ImpactMaterial = IMPACT_SHIELD,
 	Massive = false,
 	Pushable = false,
+    IgnoreFire = true,
+    IgnoreSmoke = true,
 }
 AddPawn("PawnShield") 
 PermShield = {
-    Class  = "Prime",
+    SkillList = { "SelfHarm" },
 	Name = "Shield",
-	Health = 1,
+    Class  = "Prime",
+	Health = 2,
 	MoveSpeed = 0,
 	Image = "shield1",
 	ImageOffset = 8,
-	DefaultTeam = TEAM_PLAYER,
+	DefaultTeam = TEAM_NONE,
 	Neutral = true,
 	ImpactMaterial = IMPACT_SHIELD,
 	Massive = false,
 	Pushable = false,
-    SkillList = {},
+    IgnoreFire = true,
+    IgnoreSmoke = true,
 }
+
 AddPawn("PermShield") 
 
+local function SafeDamage(pos, amount)
+    local dam = SpaceDamage(pos, amount)
+    if not Board:IsFire(pos) then
+        dam.iFire = EFFECT_REMOVE
+    end
+    if not Board:IsSmoke(pos) then
+        dam.iSmoke = EFFECT_REMOVE
+    end
+    dam.iTerrain = Board:GetTerrain(pos)
+
+    return dam
+end
 Suicide = Skill:new {
     PathSize = 1,
     Description = "Destroyed at end of turn",
@@ -82,11 +99,10 @@ Suicide = Skill:new {
 }
 function Suicide:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
-    local damage = SpaceDamage(p1)
+    local damage = SafeDamage(p1, DAMAGE_ZERO)
     damage.bHide= true
     damage.bHidePath= true
     damage.sScript = "Board:RemovePawn("..p1:GetString()..")"
-    -- damage.sSound = "/props/shield_destroyed"
     damage.sSound = "impact/generic/general"
     ret:AddQueuedDamage(damage)
     return ret
@@ -100,3 +116,26 @@ function Suicide:GetTargetScore(p1, p2)
     return 100
 end
 
+SelfHarm = Skill:new {
+    PathSize = 1,
+    Description = "Destroyed at end of turn",
+    Damage = 1,
+	LaunchSound = "",
+}
+function SelfHarm:GetSkillEffect(p1, p2)
+    local ret = SkillEffect()
+    local damage = SafeDamage(p1, 1)
+    damage.bHide= true
+    damage.bHidePath= true
+    damage.sSound = "impact/generic/general"
+    ret:AddQueuedDamage(damage)
+    return ret
+end
+function SelfHarm:GetTargetArea(p)
+    local ret = PointList()
+    ret:push_back(p)
+    return ret
+end
+function SelfHarm:GetTargetScore(p1, p2)
+    return 100
+end

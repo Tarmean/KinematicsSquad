@@ -9,8 +9,12 @@ local function init(self)
 	modApi:addWeapon_Texts(require(self.scriptPath.."weapons_text"))
     modApi:addWeapon_Texts{ALERT_COLLISION = "COLLISION DAMAGE"}
 	modApi:appendAsset("img/units/aliens/shield_1.png",self.resourcePath.."img/shield_solid_1.png")
+	modApi:appendAsset("img/units/player/mech_push.png",self.resourcePath.."img/pushmech.png")
+	modApi:appendAsset("img/units/player/mech_push_a.png",self.resourcePath.."img/pushmech_a.png")
+	modApi:appendAsset("img/units/player/mech_push_ns.png",self.resourcePath.."img/pushmech_ns.png")
     RequireAll(self){
         "animations",
+        "emitters",
         "doublepunch",
         "shieldbot",
         "uppercut",

@@ -42,32 +42,30 @@ function Prime_Pushmech:GetSkillEffect(p1, p2)
     local final_state = state0:GetPositions(self.PathSize)
 
     for i = #final_state, 1, -1 do
+        ret:AddDelay(FULL_DELAY)
         local p = final_state[i]
         local moved = p.path:size() > 1
         if moved then
             ret:AddSound("/weapons/charge")
-        end
-        Prime_Pushmech.DoAction(p, ret)
 
-        if moved then
-            Prime_Pushmech.AddTrail(p, dir, ret)
+            Prime_Pushmech.AddTrail(p1, p.orig_pos, ret)
+
+            Prime_Pushmech.DoAction(p, ret)
+
+            Prime_Pushmech.AddTrail(p.orig_pos, p.pos, ret)
             for j = i, #final_state do
                 local p = final_state[j]
                 ret:AddBounce(p.pos, -5)
                 ret:AddEmitter(p.pos, "Emitter_Burst")
             end
+            if p.state ~= ST_DROPPED then
+                ret:AddBoardShake(0.5)
+                ret:AddSound("/impact/generic/explosion")
+            end
         end
-
-        if i > 1 then
-            ret:AddDelay(FULL_DELAY)
-            ret:AddDelay(PROJ_DELAY)
-        end
-
     end
 
 
-    ret:AddBoardShake(0.5)
-    ret:AddSound("/impact/generic/explosion")
     return ret
 end
 function Prime_Pushmech.DoAction(p, ret)
@@ -84,14 +82,28 @@ function Prime_Pushmech.DoAction(p, ret)
     end
 end
 
-function Prime_Pushmech.AddTrail(tracked, dir, ret)
-    local path = extract_table(tracked.path)
-    for _,p in ipairs(path) do
+function Prime_Pushmech.AddTrail(from, to, ret)
+    -- local path = extract_table(tracked.path)
+    local dir = GetDirection(to-from)
+    for p in PointIter(from, to) do
         ret:AddBounce(p, -3)
-        local damage = SpaceDamage(p, 0)
-        damage.sAnimation = "exploout0_"..(dir)%4
-        ret:AddDamage(damage)
+        -- local damage = SpaceDamage(p, 0)
+        ret:AddAnimation(p, "exploout0_"..(dir)%4)
         ret:AddDelay(0.06)
+    end
+end
+
+function PointIter(from, to)
+    local i = from:Manhattan(to)
+    local dir = GetDirection(to - from)
+    local dirv = DIR_VECTORS[dir] or Point(0,0)
+    local cur = from
+    return function()
+        if i > 0 then
+            cur = cur + dirv
+            i = i - 1
+            return cur
+        end
     end
 end
 
