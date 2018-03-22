@@ -55,8 +55,10 @@ function Prime_Pushmech:GetSkillEffect(p1, p2)
             Prime_Pushmech.AddTrail(p.orig_pos, p.pos, ret)
             for j = i, #final_state do
                 local p = final_state[j]
-                ret:AddBounce(p.pos, -5)
-                ret:AddEmitter(p.pos, "Emitter_Burst")
+                if p.state ~= ST_DROPPED then
+                    ret:AddBounce(p.pos, -5)
+                    ret:AddEmitter(p.pos, "Emitter_Burst")
+                end
             end
             if p.state ~= ST_DROPPED then
                 ret:AddBoardShake(0.5)
