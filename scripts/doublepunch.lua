@@ -109,6 +109,8 @@ end
 
 
 function Tracked:GetPositions(left)
+    -- The inner loop steps each unit in the conga by one tile. If the conga changes we break which runs self:Setup() and retries
+    -- the outer loop repeats this until every unit is blocked (ST_PUSHED), seperated (ST_PAUSED) or killed (ST_DROPPED)
     while left > 0 and not self:Done() do
         self:Setup()
         for i = #self, 1, -1 do
@@ -121,11 +123,15 @@ function Tracked:GetPositions(left)
                 local invalid_terr = self:CheckTerrain(pawn.pathprof, next_pos)
                 if succ then
                     if succ.state == ST_PAUSED then
+                        -- a unit in the middle of the conga dropped, splitting the conga in two
+                        -- now we cought up so we setup to reintegrate the conga head
                         break
                     else
+                        -- units that collided act as terrain so we stop here
                         pawn.state = ST_PUSHED
                     end
                 elseif next_pawn then
+                    -- unit we didn't see before so we setup
                     break
                 elseif invalid_terr == TERR_COLLISION then
                     pawn.state = ST_PUSHED
@@ -137,6 +143,7 @@ function Tracked:GetPositions(left)
                     pawn.path:push_back(next_pos)
                 end
                 if pawn.state == ST_DROPPED then
+                    -- some part of the conga dropped so we setup
                     break
                 end
             end
@@ -275,7 +282,6 @@ INVALID_TERRAINS =
         { [TERRAIN_BUILDING] = TERR_COLLISION
         , [TERRAIN_MOUNTAIN] = TERR_COLLISION
         }
-    -- TODO: should this affect collision while pushing?
     , [PATH_ROADRUNNER] = -- 4
         { [TERRAIN_BUILDING] = TERR_COLLISION
         , [TERRAIN_MOUNTAIN] = TERR_COLLISION
@@ -284,13 +290,14 @@ INVALID_TERRAINS =
     }
 
 function Tracked:CheckTerrain(path, pos)
-    local result = Tracked.InvalidTerrain(path, pos)
+    local result = InvalidTerrain(pos, path)
     if result == TERR_COLLISION then
         self.obstacles[#self.obstacles+1] = pos
     end
     return result
 end
-function Tracked.InvalidTerrain(pathtype, pos)
+-- Maybe seperate this? It isn't super useful without the unit tracking, though
+function InvalidTerrain(pos, pathtype)
     local pathtype = pathtype % 16
 
     if not Board:IsValid(pos) then

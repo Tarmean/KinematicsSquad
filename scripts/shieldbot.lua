@@ -67,13 +67,16 @@ end
 function Prime_ShieldWall:GetTargetArea(point)
 	return Board:GetSimpleReachable(point, 1, self.CornersAllowed)
 end
+local function IsBlocked(p, pathprof)
+    return (InvalidTerrain(p, pathprof) == TERR_COLLISION) or Board:IsPawnSpace(p)
+end
 function Prime_ShieldWall.DoPush(p, ls, ret, dir)
     local pawn = Board:GetPawn(p)
     local show_shield = false
     if pawn then
         local p_next = p + DIR_VECTORS[dir]
         local guard = pawn:IsGuarding()
-        local collision =  not guard and Board:IsBlocked(p_next, pawn:GetPathProf()) 
+        local collision =  not guard and IsBlocked(p_next, pawn:GetPathProf()) 
         local moved = not collision and not guard
         if moved then
             ls[#ls+1] = Board:GetSimplePath(p, p_next)
