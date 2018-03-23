@@ -12,7 +12,8 @@ local ST_PAUSED = 3 -- temporarily paused until the conga catches up
 
 Prime_Pushmech = Skill:new{  
 	Class = "Science",
-	Icon = "weapons/prime_punchmech.png",
+	Name = "Push Mech",
+	Icon = "weapons/support_wind.png",
 	Rarity = 3,
 	Explosion = "",
 	-- LaunchSound = "/weapons/titan_fist",
@@ -66,7 +67,6 @@ function Prime_Pushmech:GetSkillEffect(p1, p2)
             end
         end
     end
-
 
     return ret
 end

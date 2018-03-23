@@ -2,6 +2,7 @@
 -- local inspect = require("inspect")
 Prime_ShieldWall = Skill:new{  
 	Class = "Prime",
+    Name = "Shield Mech",
 	Icon = "weapons/prime_shieldbash.png",
 	Rarity = 3,
 	Explosion = "",

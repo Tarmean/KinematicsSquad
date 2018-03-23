@@ -32,12 +32,9 @@ local function init(self)
 end
 
 local function load(self, options, version)
-	modApi:addSquad({"PusherSquad","UpperCutMech","ShieldWallMech","PushMech"},"Pushers","Style over function")
+	modApi:addSquad({"PusherSquad","UpperCutMech","ShieldWallMech","PushMech"},"Pushers","These mechs counter enemies until they have an opening for the perfect combo attack.")
 	modApi:addMissionStartHook(function(m)
         ResetUppercut(m.LiveEnvironment)
-        -- if m.LiveEnvironment then
-        --     m.LiveEnvironment.Injected = {}
-        -- end
     end)
 end
 

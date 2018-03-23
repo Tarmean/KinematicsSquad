@@ -5,6 +5,7 @@ local img = "effects/shotup_fireball.png"
 
 Prime_Uppercut = Skill:new{--{{{
 	Class = "Brute",
+    Name = "Uppercut Mech",
 	Icon = "weapons/prime_shift.png",
 	Rarity = 1,
 	Shield = 0,
@@ -15,7 +16,7 @@ Prime_Uppercut = Skill:new{--{{{
 	Cost = "low",
 	PowerCost = 2,
 	Upgrades = 2,
-	UpgradeCost = {3,2},
+	UpgradeCost = {2,3},
 	Range = 1, --TOOLTIP INFO
 	LaunchSound = "/weapons/shift",
 	CustomTipImage = "Prime_Uppercut_Tooltip",
