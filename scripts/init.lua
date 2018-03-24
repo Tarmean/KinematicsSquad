@@ -33,7 +33,7 @@ local function init(self)
 end
 
 local function load(self, options, version)
-	modApi:addSquad({"PusherSquad","UpperCutMech","ShieldWallMech","PushMech"},"Pushers","These mechs counter enemies until they have an opening for the perfect combo attack.")
+	modApi:addSquad({"PusherSquad","UpperCutMech","ShieldWallMech","PushMech"},"Pushers","These mechs counter enemies until they have an opening for the perfect combo attack.", self.resourcePath.."img/pushmech_ns.png")
 	modApi:addMissionStartHook(function(m)
         ResetUppercut(m.LiveEnvironment)
     end)
