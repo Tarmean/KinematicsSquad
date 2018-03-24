@@ -113,6 +113,9 @@ function Prime_ShieldWall.DoSpawn(p, shield)
             local dam = SpaceDamage(p)
             dam.iShield = 1
             Board:DamageSpace(dam)
+        elseif pawn:GetType() == shield then
+            local dam = SpaceDamage(p, -2)
+            Board:DamageSpace(dam)
         end
     end
 end
