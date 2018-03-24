@@ -45,15 +45,16 @@ function Prime_Uppercut:GetSkillEffect(p1, p2)--{{{{{{
     local result = Prime_Uppercut.Punch(p1, p2)
 
     local pawn = Board:GetPawn(p2)
-    local post_damage = SpaceDamage(p2, self.Damage)
     if pawn and not pawn:IsGuarding() then
         result:AddScript("Prime_Uppercut.Pre(" .. p2:GetString() .. ", " .. tostring(self.Damage) .. ", " .. tostring(self.CollisionDamage) .. ")")
 
         result:AddDelay(0.125)
+        SafeDamage(p2, self.Damage, false, result)
     else
+        local post_damage = SpaceDamage(p2, self.Damage)
         post_damage.sAnimation = "explo_fire1"
+        result:AddDamage(post_damage)
     end
-    result:AddDamage(post_damage)
 
     return result
 end--}}}
@@ -103,12 +104,12 @@ function Prime_Uppercut.PreEffect(p, damage, extradamage)
     local launcheff = SkillEffect()
     launcheff.piOrigin = p
 
-    local visual = SpaceDamage(p)
+    local visual = SpaceDamage(p, DAMAGE_ZERO)
     visual.sAnimation = "explo_fire1"
     launcheff:AddDamage(visual)
     launcheff:AddScript( "Prime_Uppercut.HideUnit("..p:GetString()..")")
 
-    local liftoff = SpaceDamage(Point(-1-p.y, -1-p.x))
+    local liftoff = SpaceDamage(Point(-1-p.y, -1-p.x), DAMAGE_ZERO)
     liftoff.sSound = "/props/pod_incoming"
     launcheff:AddAnimation(p, "splash_3")
     launcheff:AddArtillery(liftoff, img)
@@ -118,11 +119,12 @@ end
 function Prime_Uppercut.Post(state)--{{{
     local eff = SkillEffect()
     eff.piOrigin = Point(-10-state.Space.y,-10-state.Space.x)
-    local dam = SpaceDamage(state.Space, DAMAGE_DEATH)
+    local dam = SpaceDamage(state.Space, DAMAGE_ZERO)
     eff:AddSound("/props/satellite_launch")
 
     eff:AddBoardShake(1.1)
     eff:AddArtillery(dam, img)
+    SafeDamage(state.Space, DAMAGE_DEATH, true, eff)
     eff:AddDelay(0.1)
     Prime_Uppercut.AddImpact(eff, state.Space)
 

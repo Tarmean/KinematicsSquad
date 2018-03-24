@@ -20,6 +20,7 @@ local function init(self)
 	modApi:appendAsset("img/units/player/mech_push_ns.png",self.resourcePath.."img/pushmech_ns.png")
 	modApi:appendAsset("img/units/player/mech_push_h.png",self.resourcePath.."img/pushmech_h.png")
     RequireAll(self){
+        "utils",
         "animations",
         "emitters",
         "doublepunch",

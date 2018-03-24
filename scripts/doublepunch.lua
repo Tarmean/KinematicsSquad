@@ -75,8 +75,7 @@ function Prime_Pushmech.DoAction(p, ret)
         -- this abuses a bug in the preview code
         -- the preview shows the unit dieing from DAMAGE_DEATH, the execution shows the unit diving charging to its death
         ret:AddCharge(p.path, NO_DELAY)
-        local damage = SpaceDamage(p.orig_pos, DAMAGE_DEATH)
-        ret:AddDamage(damage)
+        SafeDamage(p.orig_pos, DAMAGE_DEATH, true, ret)
     else
         -- we do the damage at orig_pos because WEIRD THINGS happen to the preview if we damage at pos.
         -- this sucks because fires and smoke icons are visible when we suppress them

@@ -79,18 +79,6 @@ PermShield = {
 
 AddPawn("PermShield") 
 
-local function SafeDamage(pos, amount)
-    local dam = SpaceDamage(pos, amount)
-    if not Board:IsFire(pos) then
-        dam.iFire = EFFECT_REMOVE
-    end
-    if not Board:IsSmoke(pos) then
-        dam.iSmoke = EFFECT_REMOVE
-    end
-    dam.iTerrain = Board:GetTerrain(pos)
-
-    return dam
-end
 Suicide = Skill:new {
     PathSize = 1,
     Description = "Destroyed at end of turn",
@@ -99,7 +87,7 @@ Suicide = Skill:new {
 }
 function Suicide:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
-    local damage = SafeDamage(p1, DAMAGE_ZERO)
+    local damage = SpaceDamage(p1)
     damage.bHide= true
     damage.bHidePath= true
     damage.sScript = "Board:RemovePawn("..p1:GetString()..")"
@@ -124,11 +112,10 @@ SelfHarm = Skill:new {
 }
 function SelfHarm:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
-    local damage = SafeDamage(p1, 1)
-    damage.bHide= true
-    damage.bHidePath= true
-    damage.sSound = "impact/generic/general"
-    ret:AddQueuedDamage(damage)
+    QueuedSafeDamage(p1, 1, true, ret)
+    local dam = SpaceDamage()
+    dam.sSound = "impact/generic/general"
+    ret:AddQueuedDamage(dam)
     return ret
 end
 function SelfHarm:GetTargetArea(p)
