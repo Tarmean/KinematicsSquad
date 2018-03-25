@@ -15,6 +15,8 @@ AddPawn("ShieldWallMech")
 UpperCutMech = {
 	Name = "Uppercut Mech",
 	Class = "Brute",
+	Pushable = false,
+    Flying = true,
 	Health = 3,
 	MoveSpeed = 3,
 	Image = "MechJudo",
