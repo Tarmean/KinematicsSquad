@@ -70,12 +70,11 @@ function Prime_Uppercut.QueueEvent(effect)--{{{
     PendingEvents[#PendingEvents+1] = effect
 end--}}}
 
-function Prime_Uppercut.MkState(Space, Damage, CollisionDamage, PathProf, Id)--{{{
+function Prime_Uppercut.MkState(Space, CollisionDamage, PathProf, Id)--{{{
     return {
         CombatIcon = "combat/tile_icon/tile_airstrike.png", 
         Desc = "uppercut",
         Space = Space,
-        Damage = Damage,
         CollisionDamage = CollisionDamage,
         Id = Id,
         PathProf = PathProf

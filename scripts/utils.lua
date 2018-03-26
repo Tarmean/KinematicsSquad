@@ -42,6 +42,10 @@ function SafeBase(pos, amount, hide)
         dam.bHide= true
         dam.bHidePath= true
     end
+    -- iTerrain doesn't remove the cloud
+    if not Board:IsSmoke(pos) then
+        dam.iSmoke = EFFECT_REMOVE
+    end
     -- If a pawn stands on a forest we have to extinguish them as well
     if not Board:IsFire(pos) then
         dam.iFire = EFFECT_REMOVE
