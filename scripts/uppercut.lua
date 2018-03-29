@@ -16,7 +16,7 @@ Prime_Uppercut = Skill:new{--{{{
 	PowerCost = 2,
 	Upgrades = 2,
 	UpgradeCost = {1,3},
-    Shielding = true,
+    Shielding = false,
 	Range = 1, --TOOLTIP INFO
 	LaunchSound = "/weapons/shift",
 	CustomTipImage = "Prime_Uppercut_Tooltip",
@@ -77,13 +77,7 @@ function Prime_Uppercut.AddShield(p1, p2, result)
 
     local chargepath = {}
 
-    Prime_ShieldWall.DoPush(shieldpos, chargepath, result, back_dir)
-
-    if #chargepath > 0 then
-        result:AddDelay(FULL_DELAY)
-        result:AddCharge(chargepath[1], NO_DELAY)
-    end
-    Prime_ShieldWall.DoShield(shieldpos, result, "PawnShield")
+    Shield_Stabilizer.Activate( {{shieldpos}}, result, back_dir)
 end
 
 function Prime_Uppercut.HideUnit(id)--{{{
@@ -95,16 +89,13 @@ end--}}g
 
 function Prime_Uppercut.RestoreUnit(state)--{{{
     local pawn = Board:GetPawn(state.Id)
-    LOG("restore")
     if pawn then
         pawn:SetSpace(state.Space)
         if not pawn:IsDead() then
             pawn:SpawnAnimation()
         end
     else
-        LOG("oh no")
     end
-    LOG("restore done")
 end--}}}
 
 function Prime_Uppercut.Punch(p1, p2)
@@ -162,31 +153,25 @@ function Prime_Uppercut.Post(state)
     Board:AddEffect(eff)
 end
 function Prime_Uppercut.PostEffect(eff, state)--{{{
-    LOG("1")
     eff.piOrigin = Point(-10-state.Space.y,-10-state.Space.x)
     local dam = SpaceDamage(state.Space, DAMAGE_ZERO)
     eff:AddSound("/props/satellite_launch")
-    LOG("2")
 
     eff:AddBoardShake(1.1)
     eff:AddArtillery(dam, img)
     SafeDamage(state.Space, DAMAGE_DEATH, true, eff)
     eff:AddDelay(0.1)
     Prime_Uppercut.AddImpact(eff, state.Space)
-    LOG("3")
 
     eff:AddEmitter(state.Space, "Emitter_Unit_Crashed")
     eff:AddBoardShake(1)
     local script = "Prime_Uppercut.RestoreUnit("..save_table(state)..")"
-    LOG(script)
     eff:AddScript(script)
     dam = SpaceDamage(state.Space, 2)
-    LOG("4")
     if Board:IsBlocked(state.Space, state.PathProf) and state.CollisionDamage then
         dam.sScript = "Board:AddAlert("..state.Space:GetString()..", \"ALERT_COLLISION\")"
         dam.iDamage = DAMAGE_DEATH
     end
-    LOG("5")
     dam.sAnimation = "explo_fire1"
     eff:AddDamage(dam)
     eff:AddDelay(0.4)

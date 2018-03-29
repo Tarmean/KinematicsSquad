@@ -71,3 +71,27 @@ function QueuedSafeDamage(pos, amount, hide, ret)
         ret:AddQueuedDamage(d)
     end
 end
+
+local function ActiveWeapons_co()
+    local ids = extract_table(Board:GetPawns(TEAM_PLAYER))
+    for _, id in ipairs(ids) do
+        local pawn = Board:GetPawn(id)
+        local idx = 1
+        local next_weapon = test.GetWeaponName(pawn, idx)
+        while next_weapon do
+            coroutine.yield(next_weapon)
+            idx = idx + 1
+            next_weapon = test.GetWeaponName(pawn, idx)
+        end
+    end
+end
+
+-- yield all weapons of all player mechs
+-- ignores movement (idx 0) and repair (idx 50)
+function ActiveWeapons()
+    local co = coroutine.create(ActiveWeapons_co)
+    return function()
+        local code, res = coroutine.resume(co)
+        return res
+    end
+end

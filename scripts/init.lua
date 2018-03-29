@@ -25,6 +25,7 @@ local function init(self)
         "utils",
         "animations",
         "emitters",
+        "push_passive",
         "doublepunch",
         "shieldbot",
         "uppercut",
