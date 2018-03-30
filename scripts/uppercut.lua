@@ -61,7 +61,9 @@ function Prime_Uppercut:GetSkillEffect(p1, p2)--{{{{{{
         local post_damage = SpaceDamage(p2, 2)
         post_damage.sAnimation = "explo_fire1"
         result:AddDamage(post_damage)
-        Prime_Uppercut.AddShield(p1, p2, result)
+        if self.Shielding then
+            Prime_Uppercut.AddShield(p1, p2, result)
+        end
     end
 
     return result

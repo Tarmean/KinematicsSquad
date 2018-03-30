@@ -53,17 +53,19 @@ function Shield_Stabilizer.SpawnShields(tiles, ret, shield, dir)
         for _, t in ipairs(s) do
             Shield_Stabilizer.DoPush(t, chargepaths, ret, dir)
         end
+    end
 
-        ret:AddDelay(FULL_DELAY)
+    ret:AddDelay(FULL_DELAY)
 
-        for _,path in ipairs(chargepaths) do
-            ret:AddCharge(path, NO_DELAY)
-        end
-        
+    for _,path in ipairs(chargepaths) do
+        ret:AddCharge(path, NO_DELAY)
+    end
+
+    for _, s in ipairs(tiles) do
         for _, t in ipairs(s) do
-            ret:AddDelay(FULL_DELAY)
             Shield_Stabilizer.DoShield(t, ret, shield)
         end
+        ret:AddDelay(FULL_DELAY)
     end
 end
 local function IsBlocked(p, pathprof)

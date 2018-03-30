@@ -21,6 +21,8 @@ local function init(self)
 	modApi:appendAsset("img/units/player/mech_push_h.png",self.resourcePath.."img/pushmech_h.png")
 	modApi:appendAsset("img/units/player/mech_push_broken_w.png",self.resourcePath.."img/pushmech_broken_w.png")
 	modApi:appendAsset("img/units/player/mech_push_broken.png",self.resourcePath.."img/pushmech_broken.png")
+    package.cpath = self.resourcePath .. 'lib/?.dll;' .. package.cpath
+    require("utils")
     RequireAll(self){
         "utils",
         "animations",
