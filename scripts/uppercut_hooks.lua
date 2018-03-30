@@ -27,18 +27,18 @@ local function ApplyEffect(env)--{{{
 end--}}}
 local function MarkBoard(env)--{{{
     PushLocal(env)
-	if (#env.Injected == 0) and not Board:IsBusy() then 
-		CurrentAttack = nil
-	end
-		
-	for _,v in ipairs(env.Injected) do
+    if (#env.Injected == 0) and not Board:IsBusy() then 
+        CurrentAttack = nil
+    end
+        
+    for _,v in ipairs(env.Injected) do
         Board:MarkSpaceDesc(v.Space,v.Desc)
-	    if CurrentAttack == v then
+        if CurrentAttack == v then
             Board:MarkSpaceImage(v.Space,v.CombatIcon, GL_Color(255,150,150,0.75))
         else
             Board:MarkSpaceImage(v.Space,v.CombatIcon, GL_Color(255,226,88,0.75))
-	    end
-	end
+        end
+    end
 end--}}}
 
 local appenv_base = Mission.ApplyEnvironmentEffect--{{{

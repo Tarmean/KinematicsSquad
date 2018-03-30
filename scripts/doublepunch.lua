@@ -11,30 +11,30 @@ local ST_PUSHED = 2 -- run into an immovable obstacle, acts as an immovable obst
 local ST_PAUSED = 3 -- temporarily paused until the conga catches up
 
 Prime_Pushmech = Skill:new{  
-	Class = "Science",
-	Name = "Push Mech",
-	Icon = "weapons/support_wind.png",
-	Rarity = 3,
-	Explosion = "",
-	-- LaunchSound = "/weapons/titan_fist",
-	Range = 1, -- Tooltip?
+    Class = "Science",
+    Name = "Push Mech",
+    Icon = "weapons/support_wind.png",
+    Rarity = 3,
+    Explosion = "",
+    -- LaunchSound = "/weapons/titan_fist",
+    Range = 1, -- Tooltip?
     PathSize = INT_MAX,
     Damage = 0,
-	PushBack = false,
-	Flip = false,
-	Dash = false,
-	Shield = false,
-	Projectile = false,
-	Push = 1, --Mostly for tooltip, but you could turn it off for some unknown reason
-	PowerCost = 1,
-	Upgrades = 0,
-	--UpgradeList = { "Dash",  "+2 Damage"  },
-	UpgradeCost = { 2 , 3 },
-	TipImage = StandardTips.Melee
+    PushBack = false,
+    Flip = false,
+    Dash = false,
+    Shield = false,
+    Projectile = false,
+    Push = 1, --Mostly for tooltip, but you could turn it off for some unknown reason
+    PowerCost = 1,
+    Upgrades = 0,
+    --UpgradeList = { "Dash",  "+2 Damage"  },
+    UpgradeCost = { 2 , 3 },
+    TipImage = StandardTips.Melee
 }
  
 function Prime_Pushmech:GetSkillEffect(p1, p2)
-	local ret = SkillEffect()
+    local ret = SkillEffect()
     local dir = GetDirection(p2 - p1)
     local dirv = DIR_VECTORS[dir]
 

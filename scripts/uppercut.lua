@@ -4,34 +4,34 @@
 local img = "effects/shotup_fireball.png"
 
 Prime_Uppercut = Skill:new{--{{{
-	Class = "Brute",
+    Class = "Brute",
     Name = "Uppercut Mech",
-	Icon = "weapons/prime_shift.png",
-	Rarity = 1,
-	Shield = 0,
+    Icon = "weapons/prime_shift.png",
+    Rarity = 1,
+    Shield = 0,
     -- Push = false,
-	CollisionDamage = false,
-	FriendlyDamage = true,
-	Cost = "low",
-	PowerCost = 2,
-	Upgrades = 2,
-	UpgradeCost = {1,3},
+    CollisionDamage = false,
+    FriendlyDamage = true,
+    Cost = "low",
+    PowerCost = 2,
+    Upgrades = 2,
+    UpgradeCost = {1,3},
     Shielding = false,
-	Range = 1, --TOOLTIP INFO
-	LaunchSound = "/weapons/shift",
-	CustomTipImage = "Prime_Uppercut_Tooltip",
+    Range = 1, --TOOLTIP INFO
+    LaunchSound = "/weapons/shift",
+    CustomTipImage = "Prime_Uppercut_Tooltip",
 }
 
 Prime_Uppercut_A = Prime_Uppercut:new{
     Shielding = true,
-	CustomTipImage = "Prime_Uppercut_Tooltip_A",
+    CustomTipImage = "Prime_Uppercut_Tooltip_A",
 }
 Prime_Uppercut_B = Prime_Uppercut:new{
     CollisionDamage = true
 }
 Prime_Uppercut_AB = Prime_Uppercut:new{
     Shielding = true,
-	CustomTipImage = "Prime_Uppercut_Tooltip_A",
+    CustomTipImage = "Prime_Uppercut_Tooltip_A",
     CollisionDamage = true
 }
 
@@ -70,7 +70,7 @@ function Prime_Uppercut:GetSkillEffect(p1, p2)--{{{{{{
 end--}}}
 
 function Prime_Uppercut:GetTargetArea(point)--{{{
-	return Board:GetSimpleReachable(point, 1, self.CornersAllowed)
+    return Board:GetSimpleReachable(point, 1, self.CornersAllowed)
 end--}}}}}}
 
 function Prime_Uppercut.AddShield(p1, p2, result)

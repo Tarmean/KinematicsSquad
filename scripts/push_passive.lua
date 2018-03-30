@@ -1,7 +1,7 @@
 local inspect = require("inspect")
 Shield_Stabilizer = Skill:new {
     Name = "Shield Stabilizer",
-	Passive = "Flame_Immune",
+    Passive = "Flame_Immune",
     PowerCost = 1,
     Upgrades = 1,
     UpgradeCost = {1}

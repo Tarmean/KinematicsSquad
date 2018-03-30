@@ -1,4 +1,4 @@
-ANIMS.shield1 = 	ANIMS.BaseUnit:new{ Image = "units/aliens/shield_1.png", PosX = -23, PosY = -4 }
+ANIMS.shield1 =     ANIMS.BaseUnit:new{ Image = "units/aliens/shield_1.png", PosX = -23, PosY = -4 }
 ANIMS.shield1e = Animation:new{
     Image = "combat/shield_front_turnon.png",
     PosX = -23,
