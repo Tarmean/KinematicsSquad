@@ -79,7 +79,7 @@ function Prime_Uppercut.AddShield(p1, p2, result)
 
     local chargepath = {}
 
-    Shield_Stabilizer.Activate( {{shieldpos}}, result, back_dir)
+    Shield_Stabilizer.Activate( {{Space=shieldpos, Dir = back_dir}}, result)
 end
 
 function Prime_Uppercut.HideUnit(id)--{{{
@@ -128,14 +128,14 @@ function Prime_Uppercut.PreEffect(p, p0, extradamage, shielding)
     leap:push_back(p)
     leap:push_back(p0)
     launcheff:AddBoardShake(3)
-    launcheff:AddLeap(leap, FULL_DELAY)
+    launcheff:AddLeap(leap, 0.75)
     launcheff:AddScript( "Prime_Uppercut.HideUnit("..id..")")
     launcheff:AddSound( "/props/satellite_launch")
     launcheff:AddDelay(1)
 
     local visual = SpaceDamage(p0, DAMAGE_ZERO)
 
-    visual.sAnimation = "ExploArt3"
+    visual.sAnimation = "ExploUpper"
     launcheff:AddDamage(visual)
 
     local liftoff = SpaceDamage(Point(-1-p0.y, -1-p0.x), DAMAGE_ZERO)

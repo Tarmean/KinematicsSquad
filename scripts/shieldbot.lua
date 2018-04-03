@@ -43,9 +43,9 @@ function Prime_ShieldWall:GetSkillEffect(p1, p2)
     local dir2 = (dir+1)% 4
     local lv = DIR_VECTORS[dir2]
 
-    local tiles = {{p2}}
+    local tiles = {{{Space = p2, Dir = dir}}}
     for i = 1, self.WallSize do
-        tiles[#tiles+1] = {p2 + lv * i, p2 - lv * i}
+        tiles[#tiles+1] = {{Space = p2 + lv * i, Dir = dir}, { Space =  p2 - lv * i, Dir = dir}}
     end
     Shield_Stabilizer.Activate(tiles,ret, dir)
 

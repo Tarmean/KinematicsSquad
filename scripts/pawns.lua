@@ -17,7 +17,7 @@ UpperCutMech = {
     Class = "Brute",
     Health = 3,
     MoveSpeed = 3,
-    Image = "MechJudo",
+    Image = "MechLaunch",
     ImageOffset = 2,
     SkillList = { "Prime_Uppercut" },
     SoundLocation = "/mech/prime/rock_mech/",
@@ -44,7 +44,7 @@ PushMech = {
 AddPawn("PushMech")
 
 PawnShield = {
-    SkillList = { "Suicide" },
+    SkillList = { "SelfHarm" },
     Name = "Shield",
     Class  = "Prime",
     Health = 1,
@@ -112,7 +112,7 @@ SelfHarm = Skill:new {
 }
 function SelfHarm:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
-    QueuedSafeDamage(p1, 1, true, ret)
+    QueuedSafeDamage(p1, 1, ret)
     local dam = SpaceDamage()
     dam.sSound = "impact/generic/general"
     ret:AddQueuedDamage(dam)

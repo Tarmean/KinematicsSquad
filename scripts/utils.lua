@@ -11,6 +11,14 @@
 -- TERRAIN_SAND     7
 -- TERRAIN_WATER    3
 
+function Pawns()
+    local pawns = extract_table(Board:GetPawns(TEAM_ANY))
+    for _, id in ipairs(pawns) do
+        local pawn = Board:GetPawn(id)
+        local output = string.format("%s: %x", pawn:GetSpace():GetString(), test.GetPawnAddr(pawn))
+        LOG(output)
+    end
+end
 local DamageableTerrain = {[TERRAIN_ICE] = true, [TERRAIN_MOUNTAIN] = true, [TERRAIN_SAND] = true, [TERRAIN_FOREST]=true}
 function SafeBase(pos, amount, hide)
     local result = {}
@@ -66,9 +74,14 @@ function SafeDamage(pos, amount, hide, ret)
         ret:AddDamage(d)
     end
 end
-function QueuedSafeDamage(pos, amount, hide, ret)
-    for _, d in ipairs(SafeBase(pos, amount, hide)) do
-        ret:AddQueuedDamage(d)
+function QueuedSafeDamage(pos, amount, ret)
+    ret:AddQueuedScript("DamagePawnAt("..pos:GetString()..","..amount..")")
+end
+function DamagePawnAt(pos, amount)
+    local pawn = Board:GetPawn(pos)
+    if pawn then
+        local oldHealth = pawn:GetHealth()
+        test.SetHealth(pawn, oldHealth - amount)
     end
 end
 

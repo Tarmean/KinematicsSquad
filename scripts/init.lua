@@ -14,6 +14,13 @@ local function init(self)
         "Unit will land here, killing anything it lands on"
     }
 
+    modApi:appendAsset("img/units/player/mech_launch_ns.png",self.resourcePath.."img/launcher_ns.png")
+    modApi:appendAsset("img/units/player/mech_launch.png",self.resourcePath.."img/launcher.png")
+    modApi:appendAsset("img/units/player/mech_launch_h.png",self.resourcePath.."img/launcher_h.png")
+    modApi:appendAsset("img/units/player/mech_launch_a.png",self.resourcePath.."img/launcher_a.png")
+    modApi:appendAsset("img/units/player/mech_launch_w.png",self.resourcePath.."img/launcher_w.png")
+    modApi:appendAsset("img/units/player/mech_launch_broken.png",self.resourcePath.."img/launcher_broken.png")
+    modApi:appendAsset("img/units/player/mech_launch_broken_w.png",self.resourcePath.."img/launcher_broken_w.png")
     modApi:appendAsset("img/units/aliens/shield_1.png",self.resourcePath.."img/shield_solid_1.png")
     modApi:appendAsset("img/units/player/mech_push.png",self.resourcePath.."img/pushmech.png")
     modApi:appendAsset("img/units/player/mech_push_a.png",self.resourcePath.."img/pushmech_a.png")
@@ -21,13 +28,14 @@ local function init(self)
     modApi:appendAsset("img/units/player/mech_push_h.png",self.resourcePath.."img/pushmech_h.png")
     modApi:appendAsset("img/units/player/mech_push_broken_w.png",self.resourcePath.."img/pushmech_broken_w.png")
     modApi:appendAsset("img/units/player/mech_push_broken.png",self.resourcePath.."img/pushmech_broken.png")
-    package.cpath = self.resourcePath .. 'lib/?.dll;' .. package.cpath
-    require("utils")
+    -- package.cpath = self.resourcePath .. 'lib/?.dll;' .. package.cpath
+    local f = assert(package.loadlib(self.resourcePath.. "/lib/utils.dll", "luaopen_utils"))()
     RequireAll(self){
         "utils",
         "animations",
         "emitters",
         "push_passive",
+        "shield_overrides",
         "doublepunch",
         "shieldbot",
         "uppercut",

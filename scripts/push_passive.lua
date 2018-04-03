@@ -22,15 +22,15 @@ function PassiveType()
     end
     return ST_NONE
 end
-function Shield_Stabilizer.Activate(tiles, ret, dir)
+function Shield_Stabilizer.Activate(tiles, ret)
     local kind = PassiveType()
 
     if kind == ST_BASE then
-        Shield_Stabilizer.SpawnShields(tiles, ret, "PawnShield", dir)
+        Shield_Stabilizer.SpawnShields(tiles, ret, "PawnShield")
         return
     end
     if kind == ST_UPGRADED then
-        Shield_Stabilizer.SpawnShields(tiles, ret, "PermShield", dir)
+        Shield_Stabilizer.SpawnShields(tiles, ret, "PermShield")
         return
     end
 
@@ -42,16 +42,16 @@ function Shield_Stabilizer.ApplyShields(tiles, ret)
     damage.iShield = 1
     for _, s in ipairs(tiles) do
         for _, t in ipairs(s) do
-            damage.loc = t
+            damage.loc = t.Space
             ret:AddDamage(damage)
         end
     end
 end
-function Shield_Stabilizer.SpawnShields(tiles, ret, shield, dir)
+function Shield_Stabilizer.SpawnShields(tiles, ret, shield)
     local chargepaths = {}
     for _, s in ipairs(tiles) do
         for _, t in ipairs(s) do
-            Shield_Stabilizer.DoPush(t, chargepaths, ret, dir)
+            Shield_Stabilizer.DoPush(t.Space, chargepaths, ret, t.Dir)
         end
     end
 
@@ -63,7 +63,7 @@ function Shield_Stabilizer.SpawnShields(tiles, ret, shield, dir)
 
     for _, s in ipairs(tiles) do
         for _, t in ipairs(s) do
-            Shield_Stabilizer.DoShield(t, ret, shield)
+            Shield_Stabilizer.DoShield(t.Space, ret, shield)
         end
         ret:AddDelay(FULL_DELAY)
     end
@@ -72,9 +72,12 @@ local function IsBlocked(p, pathprof)
     return (InvalidTerrain(p, pathprof) == TERR_COLLISION) or Board:IsPawnSpace(p)
 end
 function Shield_Stabilizer.DoPush(p, ls, ret, dir)
+
     local pawn = Board:GetPawn(p)
     local show_shield = false
-    if pawn then
+    if dir == DIR_NONE and pawn then
+        show_shield = false
+    elseif pawn then
         local p_next = p + DIR_VECTORS[dir]
         local guard = pawn:IsGuarding()
         local collision =  not guard and IsBlocked(p_next, pawn:GetPathProf()) 
@@ -95,7 +98,9 @@ function Shield_Stabilizer.DoPush(p, ls, ret, dir)
             damage.sImageMark = "combat/shield_front.png"
         end
     end
-    damage.sAnimation = "airpush_"..dir
+    if (dir ~= DIR_NONE) then 
+        damage.sAnimation = "airpush_"..dir
+    end
     ret:AddDamage(damage)
 end
 function Shield_Stabilizer.DoShield(p, ret, shield)
