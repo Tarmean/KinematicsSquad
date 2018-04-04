@@ -68,6 +68,7 @@ function Shield_Stabilizer.SpawnShields(tiles, ret, shield)
         ret:AddDelay(FULL_DELAY)
     end
 end
+
 local function IsBlocked(p, pathprof)
     return (InvalidTerrain(p, pathprof) == TERR_COLLISION) or Board:IsPawnSpace(p)
 end

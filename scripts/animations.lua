@@ -33,5 +33,5 @@ ANIMS.ExploUpper = Animation:new{
 	NumFrames = 10,
 	Time = 0.075,
 	PosX = -20,
-	PosY = -45
+	PosY = -50,
 }

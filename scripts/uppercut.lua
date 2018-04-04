@@ -53,10 +53,13 @@ function Prime_Uppercut:GetSkillEffect(p1, p2)--{{{{{{
 
     local pawn = Board:GetPawn(p2)
     if pawn and not pawn:IsGuarding() then
-        result:AddScript("Prime_Uppercut.Pre(" .. p2:GetString() .. ", " ..p1:GetString().. ", " .. tostring(self.CollisionDamage) .. "," .. tostring(self.Shielding) .. ")")
+        result:AddScript("Prime_Uppercut.Pre(" .. p2:GetString() .. ", " ..p1:GetString().. ", " .. tostring(self.CollisionDamage) .. ")")
 
         result:AddDelay(1)
         SafeDamage(p2, 2, false, result)
+        if self.Shielding then
+            Prime_Uppercut.AddShield(p1, p2, result)
+        end
     else
         local post_damage = SpaceDamage(p2, 2)
         post_damage.sAnimation = "explo_fire1"
@@ -77,9 +80,7 @@ function Prime_Uppercut.AddShield(p1, p2, result)
     local back_dir = GetDirection(p1 - p2)
     local shieldpos = p1 + DIR_VECTORS[back_dir]
 
-    local chargepath = {}
-
-    Shield_Stabilizer.Activate( {{Space=shieldpos, Dir = back_dir}}, result)
+    Shield_Stabilizer.Activate({{{Space=shieldpos, Dir = back_dir}}}, result)
 end
 
 function Prime_Uppercut.HideUnit(id)--{{{
@@ -107,8 +108,8 @@ function Prime_Uppercut.Punch(p1, p2)
     result:AddMelee(p1, punch, NO_DELAY)
     return result
 end
-function Prime_Uppercut.Pre(p, p0, extradamage, shielding)--{{{
-    local launcheff = Prime_Uppercut.PreEffect(p, p0, extradamage, shielding)
+function Prime_Uppercut.Pre(p, p0, extradamage)--{{{
+    local launcheff = Prime_Uppercut.PreEffect(p, p0, extradamage)
 
     local pawn = Board:GetPawn(p)
     local state = Prime_Uppercut.MkState(p, extradamage, pawn:GetPathProf(), pawn:GetId())
@@ -118,7 +119,7 @@ function Prime_Uppercut.Pre(p, p0, extradamage, shielding)--{{{
 
     Board:AddEffect(launcheff)
 end--}}}
-function Prime_Uppercut.PreEffect(p, p0, extradamage, shielding)
+function Prime_Uppercut.PreEffect(p, p0, extradamage)
 
     local launcheff = SkillEffect()
     launcheff.piOrigin = p0
@@ -143,9 +144,6 @@ function Prime_Uppercut.PreEffect(p, p0, extradamage, shielding)
     launcheff:AddAnimation(p0, "splash_3")
     launcheff:AddArtillery(liftoff, img)
 
-    if shielding then
-        Prime_Uppercut.AddShield(p0, p, launcheff)
-    end
     return launcheff
 end
 
@@ -195,25 +193,57 @@ end--}}}
 function Prime_Uppercut_Tooltip:GetSkillEffect(p1, p2)--{{{
     local eff = SkillEffect()
     local damage = SpaceDamage()
-    damage.sScript = "Prime_Uppercut_Tooltip.GetSkillEffect_Script("..tostring(self.Shielding)..")"
-    eff:AddDamage(damage)
+    Prime_Uppercut_Tooltip.Punch(self.Shielding)
+    eff:AddDelay(5)
     return eff
 end
-function Prime_Uppercut_Tooltip.GetSkillEffect_Script(shielding)
+function Prime_Uppercut_Tooltip.Punch(shielding)
+    local p1 = Point(2, 2)
+    local p2 = Point(2, 1)
+    local eff = Prime_Uppercut.Punch(p1, p2)
+    eff:AddScript("Prime_Uppercut_Tooltip.Launch("..tostring(shielding)..")")
+    Board:AddEffect(eff)
+end
+function Prime_Uppercut_Tooltip.Launch(shielding)
     local p1 = Point(2, 2)
     local p2 = Point(2, 1)
     local pawn = Board:GetPawn(p2)
+    local id = pawn:GetId()
 
-    Board:AddEffect(Prime_Uppercut.Punch(p1, p2))
-
-    Board:AddEffect(Prime_Uppercut.PreEffect(p2, p1, 0, 0, shielding))
-
-    local eff = SkillEffect()
-    eff:AddDelay(1.25)
-    local state = Prime_Uppercut.MkState(p2, 0, false, pawn:GetPathProf(), pawn:GetId())
-    Prime_Uppercut.PostEffect(eff, state)
+    local eff = Prime_Uppercut.PreEffect(p2, p1, 0, 0)
+    if shielding then
+        eff:AddScript("Prime_Uppercut_Tooltip.Shield("..id..")")
+    else
+        eff:AddScript("Prime_Uppercut_Tooltip.Land("..id..")")
+    end
     Board:AddEffect(eff)
 end--}}}
+function Prime_Uppercut_Tooltip.Shield(id)
+    local p1 = Point(2, 2)
+    local p2 = Point(2, 1)
+    local eff = SkillEffect()
+
+    local back_dir = GetDirection(p1 - p2)
+    local shieldpos = p1 + DIR_VECTORS[back_dir]
+
+    Shield_Stabilizer.SpawnShields({{{Space=shieldpos, Dir = back_dir}}}, eff, "PawnShield")
+
+    eff:AddScript("Prime_Uppercut_Tooltip.Land("..id..")")
+    Board:AddEffect(eff)
+
+end
+function Prime_Uppercut_Tooltip.Land(id)
+    local p1 = Point(2, 2)
+    local p2 = Point(2, 1)
+
+    local pawn = Board:GetPawn(id)
+    local state = Prime_Uppercut.MkState(p2, false, pawn:GetPathProf(), pawn:GetId())
+    local eff = SkillEffect()
+    eff:AddDelay(0.74)
+    Prime_Uppercut.PostEffect(eff, state)
+    Board:AddEffect(eff)
+end
+
 
 function Prime_Uppercut_Tooltip:GetTargetArea()--{{{
     local ret = PointList()
