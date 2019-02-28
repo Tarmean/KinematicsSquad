@@ -12,7 +12,7 @@ local ST_PAUSED = 3 -- temporarily paused until the conga catches up
 
 Prime_Pushmech = Skill:new{  
     Class = "Science",
-    Name = "Push Mech",
+    Name = "Push",
     Icon = "weapons/support_wind.png",
     Rarity = 3,
     Explosion = "",

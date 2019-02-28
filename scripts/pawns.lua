@@ -27,7 +27,7 @@ UpperCutMech = {
 }
 AddPawn("UpperCutMech")
 
-PushMech = {
+TurbineMech = {
     Name = "Turbine Mech",
     Class = "Science",
     MoveSpeed = 4,
@@ -41,7 +41,7 @@ PushMech = {
     Massive = true,
     Flying = true,
 }
-AddPawn("PushMech")
+AddPawn("TurbineMech")
 
 PawnShield = {
     SkillList = { "SelfHarm" },
