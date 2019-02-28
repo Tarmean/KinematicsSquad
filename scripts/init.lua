@@ -28,6 +28,7 @@ local function init(self)
     modApi:appendAsset("img/units/player/mech_push_h.png",self.resourcePath.."img/pushmech_h.png")
     modApi:appendAsset("img/units/player/mech_push_broken_w.png",self.resourcePath.."img/pushmech_broken_w.png")
     modApi:appendAsset("img/units/player/mech_push_broken.png",self.resourcePath.."img/pushmech_broken.png")
+    modApi:appendAsset("img/weapons/shield_stabilizer.png",self.resourcePath.."img/shield_stabilizer.png")
     -- package.cpath = self.resourcePath .. 'lib/?.dll;' .. package.cpath
     local f = assert(package.loadlib(self.resourcePath.. "/lib/utils.dll", "luaopen_utils"))()
     RequireAll(self){
@@ -46,7 +47,7 @@ local function init(self)
 end
 
 local function load(self, options, version)
-    modApi:addSquad({"PusherSquad","UpperCutMech","ShieldWallMech","PushMech"},"Pushers","These mechs counter enemies until they have an opening for the perfect combo attack.", self.resourcePath.."img/pushmech_ns.png")
+    modApi:addSquad({"Kinematics","UpperCutMech","ShieldWallMech","PushMech"},"Kinematics","These mechs counter enemies until they have an opening for the perfect combo attack.", self.resourcePath.."img/pushmech_ns.png")
     modApi:addMissionStartHook(function(m)
         ResetUppercut(m.LiveEnvironment)
     end)
@@ -54,9 +55,9 @@ end
 
 
 return {
-    id = "PusherSquad",
-    name = "Pusher Squad",
-    version = "0.0.1",
+    id = "Kinematics",
+    name = "Kinematics",
+    version = "1.0.0",
     requirements = {},--Not a list of mods needed for our mod to function, but rather the mods that we need to load before ours to maintain compability 
     init = init,
     load = load,

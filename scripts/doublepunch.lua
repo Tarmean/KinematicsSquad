@@ -121,6 +121,8 @@ function Tracked:GetPositions(left)
                 local next_pos = pawn.pos + self.dirv
                 local succ =  self:GetKnown(next_pos)
                 local next_pawn = self:GetUnknown(next_pos)
+                -- local pathprof = if pawn:IsMassive() then PATH_MASSIVE else pawn.pathprof
+                --
                 local invalid_terr = self:CheckTerrain(pawn.pathprof, next_pos)
                 if succ then
                     if succ.state == ST_PAUSED then
@@ -244,7 +246,9 @@ function Tracked.mkMarker(pawn)
     local pos = pawn:GetSpace()
     list:push_back(pos)
     local state = pawn:IsGuarding() and ST_PUSHED or ST_ACTIVE
-    local o = { pos = pos, dead =  false,  orig_pos = pos, id = pawn:GetId(), pathprof = pawn:GetPathProf(), state = state, path = list}
+    -- Spider Leader is both jumper and massive which breaks GetPathProf
+    local pathprof = pawn:GetMechName() == "Spider Leader" and PATH_MASSIVE or pawn:GetPathProf()
+    local o = { pos = pos, dead =  false,  orig_pos = pos, id = pawn:GetId(), pathprof = pathprof, state = state, path = list}
     return o
 end
 
@@ -290,6 +294,8 @@ INVALID_TERRAINS =
         }
     }
 
+-- function GetPawnPathType(pawn)
+--     if pawn:
 function Tracked:CheckTerrain(path, pos)
     local result = InvalidTerrain(pos, path)
     if result == TERR_COLLISION then
@@ -300,6 +306,7 @@ end
 -- Maybe seperate this? It isn't super useful without the unit tracking, though
 function InvalidTerrain(pos, pathtype)
     local pathtype = pathtype % 16
+
 
     if not Board:IsValid(pos) then
         return TERR_COLLISION

@@ -5,7 +5,7 @@ local img = "effects/shotup_fireball.png"
 
 Prime_Uppercut = Skill:new{--{{{
     Class = "Brute",
-    Name = "Uppercut Mech",
+    Name = "Launch!",
     Icon = "weapons/prime_shift.png",
     Rarity = 1,
     Shield = 0,

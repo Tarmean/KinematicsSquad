@@ -1,5 +1,5 @@
 ShieldWallMech = {
-    Name = "Wall Mech",
+    Name = "Guardian Mech",
     Class = "Prime",
     Health = 3,
     MoveSpeed = 3,
@@ -13,7 +13,7 @@ ShieldWallMech = {
 }
 AddPawn("ShieldWallMech")
 UpperCutMech = {
-    Name = "Uppercut Mech",
+    Name = "Launcher Mech",
     Class = "Brute",
     Health = 3,
     MoveSpeed = 3,
@@ -28,7 +28,7 @@ UpperCutMech = {
 AddPawn("UpperCutMech")
 
 PushMech = {
-    Name = "Push Mech",
+    Name = "Turbine Mech",
     Class = "Science",
     MoveSpeed = 4,
     Health = 2,
