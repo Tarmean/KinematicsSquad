@@ -7,7 +7,7 @@ local function RequireAll(self)
 end
 local function init(self)
     modApi:addWeapon_Texts(require(self.scriptPath.."weapons_text"))
-    modApi:addWeapon_Texts{ALERT_COLLISION = "COLLISION DAMAGE"}
+    modApi:addWeapon_Texts{ALERT_COLLISION = "COLLISION DAMAGE", ALERT_COLLISION_SHIELDED = "IMPACT SHIELDING"}
 
     TILE_TOOLTIPS.uppercut =
     { "Crash Site",
@@ -42,6 +42,7 @@ local function init(self)
         "uppercut",
         "uppercut_hooks",
         "pawns",
+        "scorelist_overwrite"
     }
 
 end
@@ -51,6 +52,8 @@ local function load(self, options, version)
     modApi:addMissionStartHook(function(m)
         ResetUppercut(m.LiveEnvironment)
     end)
+
+    RegisterScoreListOverride(PawnShield.OverwriteTargetScore)
 end
 
 

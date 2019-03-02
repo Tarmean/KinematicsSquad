@@ -18,7 +18,6 @@ Prime_ShieldWall = Skill:new{
     Push = 1, --Mostly for tooltip, but you could turn it off for some unknown reason
     PowerCost = 1,
     Upgrades = 1,
-    --UpgradeList = { "Dash",  "+2 Damage"  },
     UpgradeCost = { 3 },
     TipImage = {
         Unit = Point(2,2),

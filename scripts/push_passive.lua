@@ -4,38 +4,37 @@ Shield_Stabilizer = Skill:new {
     Passive = "Flame_Immune",
     Icon = "weapons/shield_stabilizer.png",
     PowerCost = 1,
-    Upgrades = 1,
-    UpgradeCost = {1}
+    Upgrades = 2,
+    UpgradeCost = {2, 3}
 }
 Shield_Stabilizer_A = Shield_Stabilizer:new {}
+Shield_Stabilizer_B = Shield_Stabilizer:new {}
+Shield_Stabilizer_AB = Shield_Stabilizer:new {}
 
-local ST_NONE = 1
-local ST_BASE = 2
-local ST_UPGRADED = 3
 
 function PassiveType()
     for s in ActiveWeapons() do
         if s == "Shield_Stabilizer" then
-            return ST_BASE
+            return "PawnShield"
         elseif s == "Shield_Stabilizer_A" then
-            return ST_UPGRADED
+            return "PawnShield_A"
+        elseif s == "Shield_Stabilizer_B" then
+            return "PawnShield_B"
+        elseif s == "Shield_Stabilizer_AB" then
+            return "PawnShield_AB"
         end
     end
-    return ST_NONE
+    return nil
 end
 function Shield_Stabilizer.Activate(tiles, ret)
     local kind = PassiveType()
 
-    if kind == ST_BASE then
-        Shield_Stabilizer.SpawnShields(tiles, ret, "PawnShield")
-        return
-    end
-    if kind == ST_UPGRADED then
-        Shield_Stabilizer.SpawnShields(tiles, ret, "PermShield")
-        return
+    if kind then
+        Shield_Stabilizer.SpawnShields(tiles, ret, kind)
+    else
+        Shield_Stabilizer.ApplyShields(tiles, ret)
     end
 
-    Shield_Stabilizer.ApplyShields(tiles, ret)
 end
 
 function Shield_Stabilizer.ApplyShields(tiles, ret)

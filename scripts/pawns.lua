@@ -43,6 +43,14 @@ TurbineMech = {
 }
 AddPawn("TurbineMech")
 
+function copy (t) -- shallow-copy a table
+    if type(t) ~= "table" then return t end
+    local meta = getmetatable(t)
+    local target = {}
+    for k, v in pairs(t) do target[k] = v end
+    setmetatable(target, meta)
+    return target
+end
 PawnShield = {
     SkillList = { "SelfHarm" },
     Name = "Shield",
@@ -52,6 +60,7 @@ PawnShield = {
     Image = "shield1",
     ImageOffset = 8,
     DefaultTeam = TEAM_NONE,
+	Corporate = true,
     Neutral = true,
     ImpactMaterial = IMPACT_SHIELD,
     Massive = false,
@@ -59,25 +68,26 @@ PawnShield = {
     IgnoreFire = true,
     IgnoreSmoke = true,
 }
+PawnShield_A = copy(PawnShield)
+PawnShield_B = copy(PawnShield)
+PawnShield_AB = copy(PawnShield)
+PawnShield_A.Health = 2
+PawnShield_B.DefaultTeam = TEAM_PLAYER
+PawnShield_AB.Health = 2
+PawnShield_AB.DefaultTeam = TEAM_PLAYER
 AddPawn("PawnShield") 
-PermShield = {
-    SkillList = { "SelfHarm" },
-    Name = "Shield",
-    Class  = "Prime",
-    Health = 2,
-    MoveSpeed = 0,
-    Image = "shield1",
-    ImageOffset = 8,
-    DefaultTeam = TEAM_NONE,
-    Neutral = true,
-    ImpactMaterial = IMPACT_SHIELD,
-    Massive = false,
-    Pushable = false,
-    IgnoreFire = true,
-    IgnoreSmoke = true,
-}
-
-AddPawn("PermShield") 
+AddPawn("PawnShield_A") 
+AddPawn("PawnShield_B") 
+AddPawn("PawnShield_AB") 
+function PawnShield.OverwriteTargetScore(skill, spaceDamage, queued)
+    local target = spaceDamage.loc
+    if not target then return end
+    local target_pawn = Board:GetPawn(target)
+    if not target_pawn then return end
+    if modApi:stringStartsWith(target_pawn:GetType(), "PawnShield") then
+        return 0
+    end
+end
 
 Suicide = Skill:new {
     PathSize = 1,

@@ -1,3 +1,4 @@
+-- local inspect = require("inspect")
 local PendingEvents = { }
 local CurrentAttack = nil
 
@@ -70,14 +71,13 @@ function Prime_Uppercut.QueueEvent(effect)--{{{
     PendingEvents[#PendingEvents+1] = effect
 end--}}}
 
-function Prime_Uppercut.MkState(Space, CollisionDamage, PathProf, Id)--{{{
+function Prime_Uppercut.MkState(Space, FriendlyDamage, Id)--{{{
     return {
         CombatIcon = "combat/tile_icon/tile_airstrike.png", 
         Desc = "uppercut",
         Space = Space,
-        CollisionDamage = CollisionDamage,
+        FriendlyDamage = FriendlyDamage,
         Id = Id,
-        PathProf = PathProf
     }
 end
 --}}}}}}
