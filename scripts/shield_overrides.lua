@@ -1,3 +1,4 @@
+local inspect = require("inspect")
 function Science_Shield:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 	local direction = GetDirection(p2-p1)
@@ -39,19 +40,22 @@ function Science_LocalShield:GetSkillEffect(p1, p2)
 
     local max_radius = self.WideArea
     local points = {}
-    for i = -3, 3 do
-        for j = -3, 3 do
-            if math.abs(j)+math.abs(i) <= max_radius then
-                local p_cur = Point(i, j) + p1
-                points[#points+1] = { Space = p_cur, Dir = DIR_NONE}
+    for r = max_radius, 1, -1 do
+        local cur_points = {}
+        for i = -3, 3 do
+            for j = -3, 3 do
+                if math.abs(j)+math.abs(i) == r then
+                    local p_cur = Point(i, j) + p1
+                    cur_points[#cur_points+1] = { Space = p_cur, Dir = GetDirection(p_cur - p1)}
+                end
             end
+        end
+        if #cur_points > 0 then
+            points[#points+1] = cur_points
         end
     end
 	local ret = SkillEffect()
-	
-	
-    Shield_Stabilizer.Activate({points}, ret)
-	
+    Shield_Stabilizer.Activate(points, ret)
 	return ret
 end	
 

@@ -84,17 +84,17 @@ function Shield_Stabilizer.SpawnShields(tiles, ret, shield)
     end
 
     ret:AddDelay(FULL_DELAY)
-    for _, s in ipairs(tiles) do
-        local already_delayed = false
+    for outer_index, s in ipairs(tiles) do
+        local none_shielded = true
         for _, t in ipairs(s) do
             local pawn_at_loc = sim:PawnAt(t.Space)
             local dir = t.Dir
             if pawn_at_loc and pawn_at_loc:HasMoved() then
                 dir = DIR_NONE
-                already_delayed = true
             end
             local damage = SpaceDamage(t.Space, DAMAGE_ZERO, dir)
             if not pawn_at_loc then
+                none_shielded = false
                 local terr = sim:TerrainAt(t.Space)
                 if terr ~= TERRAIN_HOLE and terr ~= TERRAIN_ACID and terr ~= TERRAIN_LAVA and terr ~= TERRAIN_WATER then
                     damage.sImageMark = "combat/shield_front.png"
@@ -103,7 +103,7 @@ function Shield_Stabilizer.SpawnShields(tiles, ret, shield)
             ret:AddDamage(damage)
             Shield_Stabilizer.DoShield(t.Space, ret, shield)
         end
-        ret:AddDelay(already_delayed and NO_DELAY or FULL_DELAY)
+        ret:AddDelay(none_shielded and NO_DELAY or FULL_DELAY)
     end
 end
 
