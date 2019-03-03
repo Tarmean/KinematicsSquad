@@ -50,15 +50,19 @@ end
 function Shield_Stabilizer.SpawnShields(tiles, ret, shield)
     local chargepaths = {}
     for _, s in ipairs(tiles) do
+        local cur_chargepaths = {}
         for _, t in ipairs(s) do
-            Shield_Stabilizer.DoPush(t.Space, chargepaths, ret, t.Dir)
+            Shield_Stabilizer.DoPush(t.Space, cur_chargepaths, ret, t.Dir)
         end
+        chargepaths[#chargepaths+1] = cur_chargepaths
     end
 
     ret:AddDelay(FULL_DELAY)
 
-    for _,path in ipairs(chargepaths) do
-        ret:AddCharge(path, NO_DELAY)
+    for _,paths in ipairs(chargepaths) do
+        for _,path in ipairs(paths) do
+            ret:AddCharge(path, FULL_DELAY)
+        end
     end
 
     for _, s in ipairs(tiles) do

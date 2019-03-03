@@ -42,7 +42,8 @@ local function init(self)
         "uppercut",
         "uppercut_hooks",
         "pawns",
-        "scorelist_overwrite"
+        "scorelist_overwrite",
+        "matrix"
     }
 
 end

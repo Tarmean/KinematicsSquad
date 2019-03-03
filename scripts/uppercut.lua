@@ -15,7 +15,7 @@ Prime_Uppercut = Skill:new{--{{{
     PowerCost = 2,
     Upgrades = 2,
     UpgradeCost = {2,1},
-    Shielding = false,
+    Shielding = true,
     Range = 1, --TOOLTIP INFO
     LaunchSound = "/weapons/shift",
     CustomTipImage = "Prime_Uppercut_Tooltip",
@@ -219,14 +219,10 @@ function Prime_Uppercut_Tooltip.Launch(shielding)
 end--}}}
 function Prime_Uppercut.ShieldPositions(p1, p2)
     local back_dir = GetDirection(p1 - p2)
-    local shieldpos = p1
+    local dir_vec = DIR_VECTORS[back_dir]
+    local shieldpos = p1 + dir_vec
 
-    local shields = {}
-
-    for i = 1,3 do
-        shieldpos = shieldpos + DIR_VECTORS[back_dir]
-        shields[#shields+1] = {{Space = shieldpos, Dir = back_dir}}
-    end
+    local shields = { {{Space = shieldpos + dir_vec + dir_vec, Dir = back_dir}}, {{Space = shieldpos + dir_vec, Dir = back_dir}}, {{Space = shieldpos, Dir = back_dir}}}
     return shields
 end
 function Prime_Uppercut_Tooltip.Shield(id)
