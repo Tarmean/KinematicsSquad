@@ -58,11 +58,31 @@ function ProxyPawn:new (pawn, simulation, o)
   o.simulation = simulation
   return o
 end
+function ProxyPawn:SetHealth(i)
+    self.health = i
+    if self.health <= 0 then
+        self.health = 0
+        self.is_alive = false
+    end
+end
 function ProxyPawn:GetHealth()
     if not self.health then
         self.health = self.pawn:GetHealth()
     end
     return self.health
+end
+function ProxyPawn:DamageBy(amount)
+    if self:IsShield() then
+        self:SetShield(false)
+    else
+        self:SetHealth(self:GetHealth() - amount)
+    end
+end
+function ProxyPawn:IsGuarding()
+    if not self.is_guarding then
+        self.is_guarding = self.pawn:IsGuarding()
+    end
+    return self.is_guarding
 end
 function ProxyPawn:IsDropped()
     if nil == self.is_dropped then
@@ -76,6 +96,15 @@ function ProxyPawn:IsAlive()
     end
     return self.is_alive
 end
+function ProxyPawn:IsShield()
+    if nil == self.is_shield then
+        self.is_shield = self.pawn:IsShield()
+    end
+    return self.is_shield
+end
+function ProxyPawn:SetShield(b)
+    self.is_shield = b
+end
 function ProxyPawn:GetId()
     if not self.id then
         self.id = self.pawn:GetId()
@@ -85,6 +114,7 @@ end
 function ProxyPawn:GetSpace()
     if not self.space then
         self.space = self.pawn:GetSpace()
+        self.orig_space = self.space
     end
     return self.space
 end
@@ -150,6 +180,7 @@ ProxyPawn.TERR_COLLISION = 2
 ProxyPawn.DROPPED = 3
 ProxyPawn.VALID = 4
 ProxyPawn.OOB = 5
+ProxyPawn.GUARDING = 6
 function ProxyPawn:CheckSpaceFree(pos)
     if self.simulation:PawnAt(pos) then
         return ProxyPawn.UNIT_COLLISION
@@ -160,7 +191,12 @@ function ProxyPawn:CheckSpaceFree(pos)
     local result =  invalid_result or ProxyPawn.VALID
     return result
 end
+function ProxyPawn:GetOriginalSpace()
+    return self.orig_space or self:GetSpace()
+end
 function ProxyPawn:SetSpace(pos)
+    -- make sure to call GetSpace before setting it
+    self:GetSpace()
     if not (Board:IsValid(pos)) then
         return ProxyPawn.OOB
     end
@@ -173,4 +209,25 @@ function ProxyPawn:SetSpace(pos)
         self.space = pos
     end
     return result
+end
+function ProxyPawn:Shove(dir)
+    if self:IsGuarding() then
+        return ProxyPawn.GUARDING
+    end
+    local dirv = DIR_VECTORS[dir]
+    if not dirv then return end
+    local old_pos = self:GetSpace()
+    local new_pos = old_pos + dirv
+    local res = self:SetSpace(new_pos)
+    if res == ProxyPawn.UNIT_COLLISION then
+        local other = self.simulation:PawnAt(new_pos)
+        other:DamageBy(1)
+        self:DamageBy(1)
+    elseif res == ProxyPawn.TERR_COLLISION then
+        self:DamageBy(1)
+    end
+    return res
+end
+function ProxyPawn:HasMoved()
+    return self:GetSpace() ~= self:GetOriginalSpace()
 end

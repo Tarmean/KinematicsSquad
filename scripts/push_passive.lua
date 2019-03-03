@@ -47,29 +47,63 @@ function Shield_Stabilizer.ApplyShields(tiles, ret)
         end
     end
 end
+local hash_point = function (point)
+    return point.x + 128 * point.y
+end
 function Shield_Stabilizer.SpawnShields(tiles, ret, shield)
-    local chargepaths = {}
+    local affected_tiles = {}
+    local sim = Simulation:new()
     for _, s in ipairs(tiles) do
-        local cur_chargepaths = {}
         for _, t in ipairs(s) do
-            Shield_Stabilizer.DoPush(t.Space, cur_chargepaths, ret, t.Dir)
+            local new_space = t.Space + (DIR_VECTORS[t.Dir] or Point(0,0))
+            if affected_tiles[hash_point(t.Space)] or affected_tiles[hash_point(new_space)] then
+                affected_tiles = {}
+                ret:AddDelay(FULL_DELAY)
+            end
+            local p = sim:PawnAt(t.Space)
+            if p then
+                affected_tiles[hash_point(t.Space)] = true
+                affected_tiles[hash_point(new_space)] = true
+                p:Shove(t.Dir)
+                if p:GetSpace() ~= t.Space then
+                    ret:AddCharge(Board:GetSimplePath(t.Space, p:GetSpace()), NO_DELAY)
+                end
+            end
+            local damage = SpaceDamage(t.Space, DAMAGE_ZERO)
+            if not sim:PawnAt(t.Space) then
+                local terr = sim:TerrainAt(t.Space)
+                if terr ~= TERRAIN_HOLE and terr ~= TERRAIN_ACID and terr ~= TERRAIN_LAVA and terr ~= TERRAIN_WATER then
+                    damage.sImageMark = "combat/shield_front.png"
+                end
+            end
+            if (t.Dir ~= DIR_NONE) then 
+                damage.sAnimation = "airpush_"..t.Dir
+            end
+            ret:AddDamage(damage)
         end
-        chargepaths[#chargepaths+1] = cur_chargepaths
     end
 
     ret:AddDelay(FULL_DELAY)
-
-    for _,paths in ipairs(chargepaths) do
-        for _,path in ipairs(paths) do
-            ret:AddCharge(path, FULL_DELAY)
-        end
-    end
-
     for _, s in ipairs(tiles) do
+        local already_delayed = false
         for _, t in ipairs(s) do
+            local pawn_at_loc = sim:PawnAt(t.Space)
+            local dir = t.Dir
+            if pawn_at_loc and pawn_at_loc:HasMoved() then
+                dir = DIR_NONE
+                already_delayed = true
+            end
+            local damage = SpaceDamage(t.Space, DAMAGE_ZERO, dir)
+            if not pawn_at_loc then
+                local terr = sim:TerrainAt(t.Space)
+                if terr ~= TERRAIN_HOLE and terr ~= TERRAIN_ACID and terr ~= TERRAIN_LAVA and terr ~= TERRAIN_WATER then
+                    damage.sImageMark = "combat/shield_front.png"
+                end
+            end
+            ret:AddDamage(damage)
             Shield_Stabilizer.DoShield(t.Space, ret, shield)
         end
-        ret:AddDelay(FULL_DELAY)
+        ret:AddDelay(already_delayed and NO_DELAY or FULL_DELAY)
     end
 end
 

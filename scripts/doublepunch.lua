@@ -32,15 +32,15 @@ function Prime_Pushmech:GetSkillEffect(p1, p2)
     for i = #final_state, 1, -1 do
         ret:AddDelay(FULL_DELAY)
         local p = final_state[i]
-        local moved = p.orig_pos ~= p:GetSpace()
+        local moved = p:HasMoved()
         if moved then
             ret:AddSound("/weapons/charge")
 
-            Prime_Pushmech.AddTrail(p1, p.orig_pos, ret)
+            Prime_Pushmech.AddTrail(p1, p:GetOriginalSpace(), ret)
 
             Prime_Pushmech.DoAction(p, ret)
 
-            Prime_Pushmech.AddTrail(p.orig_pos, p:GetSpace(), ret)
+            Prime_Pushmech.AddTrail(p:GetOriginalSpace(), p:GetSpace(), ret)
             for j = i, #final_state do
                 local p = final_state[j]
                 if p:IsAlive() then
@@ -60,14 +60,14 @@ end
 function Prime_Pushmech.DoAction(p, ret)
     local path = PointList()
 
-    for p in PointIter(p.orig_pos, p:GetSpace()) do
+    for p in PointIter(p:GetOriginalSpace(), p:GetSpace()) do
         path:push_back(p)
     end
     if not p:IsAlive() then
         -- this abuses a bug in the preview code
         -- the preview shows the unit dieing from DAMAGE_DEATH, the execution shows the unit diving charging to its death
         ret:AddCharge(path, NO_DELAY)
-        SafeDamage(p.orig_pos, DAMAGE_DEATH, false, ret)
+        SafeDamage(p:GetOriginalSpace(), DAMAGE_DEATH, false, ret)
     else
         -- we do the damage at orig_pos because WEIRD THINGS happen to the preview if we damage at pos.
         -- this sucks because fires and smoke icons are visible when we suppress them
@@ -112,9 +112,6 @@ end
 function RecursivePush(id, dir, sim)
     local p = sim:PawnWithId(id)
     local pos = p:GetSpace()
-    if not p.orig_pos then
-        p.orig_pos = pos
-    end
     local new_pos = pos + dir
     local move_typ = p:SetSpace(new_pos)
     local mov_types = {[1]="collision", [2]= "terr_collision", [3]= "dropped", [4]= "valid", [5]= "oob"}
