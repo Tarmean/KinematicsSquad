@@ -27,25 +27,35 @@ Kinematics_Prime_LaunchWeapon_A = Kinematics_Prime_LaunchWeapon:new{
     CustomTipImage = "Kinematics_Prime_LaunchWeapon_Tooltip_A",
 }
 Kinematics_Prime_LaunchWeapon_B = Kinematics_Prime_LaunchWeapon:new{
-    FriendlyDamage = false
+    FriendlyDamage = false,
+    CustomTipImage = "Kinematics_Prime_LaunchWeapon_Tooltip_B"
 }
 Kinematics_Prime_LaunchWeapon_AB = Kinematics_Prime_LaunchWeapon:new{
     Shielding = true,
-    CustomTipImage = "Kinematics_Prime_LaunchWeapon_Tooltip_A",
+    CustomTipImage = "Kinematics_Prime_LaunchWeapon_Tooltip_AB",
     FriendlyDamage = false
 }
 
 Kinematics_Prime_LaunchWeapon_Tooltip = Skill:new {
+    FriendlyDamage = true,
     Shielding = false,
     TipImage = {
         Unit = Point(2,2),
         Target = Point(2,1),
         Enemy = Point(2,1),
+        CustomPawn = "Kinematics_UpperCutMech",
     }
 }
 Kinematics_Prime_LaunchWeapon_Tooltip_A = Kinematics_Prime_LaunchWeapon_Tooltip:new {
     Shielding = true,
 }--}}}
+Kinematics_Prime_LaunchWeapon_Tooltip_B = Kinematics_Prime_LaunchWeapon_Tooltip:new {
+    FriendlyDamage = false,
+}--}}}
+Kinematics_Prime_LaunchWeapon_Tooltip_AB = Kinematics_Prime_LaunchWeapon_Tooltip:new {
+    FriendlyDamage = false,
+    Shielding = true,
+}
 
 function Kinematics_Prime_LaunchWeapon:GetSkillEffect(p1, p2)--{{{{{{
     local result = Kinematics_Prime_LaunchWeapon.Punch(p1, p2)
@@ -194,25 +204,29 @@ end--}}}
 function Kinematics_Prime_LaunchWeapon_Tooltip:GetSkillEffect(p1, p2)--{{{
     local eff = SkillEffect()
     local damage = SpaceDamage()
-    Kinematics_Prime_LaunchWeapon_Tooltip.Punch(self.Shielding)
+    Kinematics_Prime_LaunchWeapon_Tooltip.Punch(self.Shielding, self.FriendlyDamage)
     eff:AddDelay(5)
     return eff
 end
-function Kinematics_Prime_LaunchWeapon_Tooltip.Punch(shielding)
+function Kinematics_Prime_LaunchWeapon_Tooltip.Punch(shielding, friendlyDamage)
     local p1 = Point(2, 2)
     local p2 = Point(2, 1)
     local eff = Kinematics_Prime_LaunchWeapon.Punch(p1, p2)
-    eff:AddScript("Kinematics_Prime_LaunchWeapon_Tooltip.Launch("..tostring(shielding)..")")
+    eff:AddScript("Kinematics_Prime_LaunchWeapon_Tooltip.Launch("..tostring(shielding).. ", " .. tostring(friendlyDamage) .. ")")
     Board:AddEffect(eff)
 end
-function Kinematics_Prime_LaunchWeapon_Tooltip.Launch(shielding)
+function Kinematics_Prime_LaunchWeapon_Tooltip.Launch(shielding, friendlyDamage)
     local p1 = Point(2, 2)
     local p2 = Point(2, 1)
     local pawn = Board:GetPawn(p2)
     local id = pawn:GetId()
 
-    local state = Kinematics_Prime_LaunchWeapon.MkState(p2, false, id)
+    local state = Kinematics_Prime_LaunchWeapon.MkState(p2, friendlyDamage, id)
     local eff = Kinematics_Prime_LaunchWeapon.LaunchFX(state, p1)
+    if not friendlyDamage then
+        eff:AddDelay(0.5)
+        eff:AddMove(Board:GetSimplePath(p1, p2), FULL_DELAY)
+    end
     if shielding then
         eff:AddScript("Kinematics_Prime_LaunchWeapon_Tooltip.Shield("..id..")")
     else
@@ -249,6 +263,7 @@ function Kinematics_Prime_LaunchWeapon_Tooltip.Land(id)
     local eff = SkillEffect()
     eff:AddDelay(0.74)
     Kinematics_Prime_LaunchWeapon.PostEffect(eff, state)
+    eff:AddDelay(0.6)
     Board:AddEffect(eff)
 end
 

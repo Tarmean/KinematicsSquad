@@ -7,11 +7,20 @@ Kinematics_Shield_Passive = Skill:new {
     Icon = "weapons/kinematics_shield_stabilizer.png",
     PowerCost = 1,
     Upgrades = 2,
-    UpgradeCost = {2, 3}
+    UpgradeCost = {2, 3},
+    CustomTipImage = "Kinematics_Shield_Passive_Tooltip",
 }
 Kinematics_Shield_Passive_A = Kinematics_Shield_Passive:new {}
 Kinematics_Shield_Passive_B = Kinematics_Shield_Passive:new {}
 Kinematics_Shield_Passive_AB = Kinematics_Shield_Passive:new {}
+Kinematics_Shield_Passive_Tooltip = Skill:new {
+    TipImage = {
+        Unit = Point(2,3),
+        Enemy = Point(2,1),
+        Target=Point(2,1),
+		CustomPawn = "ScienceMech"
+    }
+}
 
 
 local function PassiveType()
@@ -133,3 +142,16 @@ function Kinematics_Shield_Passive.DoSpawn(p, shield)
         end
     end
 end
+function Kinematics_Shield_Passive_Tooltip:GetSkillEffect(p1, p2)
+    if not PassiveType() then
+        Board:GetPawn(p1):AddWeapon("Kinematics_Shield_Passive")
+    end
+    return Science_Shield:GetSkillEffect(p1, p2)
+
+end
+function Kinematics_Shield_Passive_Tooltip:GetTargetArea(p1, p2)
+    local ret = PointList()
+    ret:push_back(Point(2,1))
+    return ret
+end
+
