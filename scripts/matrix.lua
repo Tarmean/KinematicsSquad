@@ -88,7 +88,7 @@ function ProxyPawn:DamageBy(amount)
     end
 end
 function ProxyPawn:IsGuarding()
-    if not self.is_guarding then
+    if nil == self.is_guarding then
         self.is_guarding = self.pawn:IsGuarding()
     end
     return self.is_guarding
@@ -126,6 +126,12 @@ function ProxyPawn:GetSpace()
         self.orig_space = self.space
     end
     return self.space
+end
+function ProxyPawn:IsPlayer()
+    if nil == self.is_player then
+        self.is_player = self.pawn:IsPlayer()
+    end
+    return self.is_player
 end
 function ProxyPawn:GetType()
     if not self.typ then

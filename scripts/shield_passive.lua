@@ -81,12 +81,6 @@ function Kinematics_Shield_Passive.SpawnShields(tiles, ret, shield)
                 end
             end
             local damage = SpaceDamage(t.Space, DAMAGE_ZERO)
-            if not sim:PawnAt(t.Space) then
-                local terr = sim:TerrainAt(t.Space)
-                if terr ~= TERRAIN_HOLE and terr ~= TERRAIN_ACID and terr ~= TERRAIN_LAVA and terr ~= TERRAIN_WATER then
-                    damage.sImageMark = "combat/shield_front.png"
-                end
-            end
             if (t.Dir ~= DIR_NONE) then 
                 damage.sAnimation = "airpush_"..t.Dir
             end
@@ -104,7 +98,7 @@ function Kinematics_Shield_Passive.SpawnShields(tiles, ret, shield)
                 dir = DIR_NONE
             end
             local damage = SpaceDamage(t.Space, DAMAGE_ZERO, dir)
-            if not pawn_at_loc then
+            if not pawn_at_loc or (pawn_at_loc:IsGuarding() and pawn_at_loc:IsPlayer()) then
                 none_shielded = false
                 local terr = sim:TerrainAt(t.Space)
                 if terr ~= TERRAIN_HOLE and terr ~= TERRAIN_ACID and terr ~= TERRAIN_LAVA and terr ~= TERRAIN_WATER then
