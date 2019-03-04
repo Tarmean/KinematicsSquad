@@ -1,4 +1,6 @@
-Prime_Pushmech = Skill:new{  
+local utils = Kinematics:require("utils")
+local Simulation = Kinematics:require("matrix")
+Kinematics_Prime_PushWeapon = Skill:new{  
     Class = "Science",
     Name = "Push",
     Icon = "weapons/support_wind.png",
@@ -20,13 +22,30 @@ Prime_Pushmech = Skill:new{
     UpgradeCost = { 2 , 3 },
     TipImage = StandardTips.Melee
 }
+
+local function RecursivePush(pawn, dir, sim)
+    local pos = pawn:GetSpace()
+    local new_pos = pos + dir
+    local move_typ = pawn:SetSpace(new_pos)
+    if move_typ == Simulation.UNIT_COLLISION then
+        local collision_pawn = sim:PawnAt(new_pos)
+        return RecursivePush(collision_pawn, dir, sim)
+    end
+    return move_typ == Simulation.VALID or move_typ == Simulation.DROPPED
+end
+local function BasePush(pos, dir)
+    local cur = pos
+    local sim = Simulation:new()
+    local p = sim:PawnAt(pos)
+    while RecursivePush(p, dir, sim) do end
+    return sim.sim_pawns
+end
  
-function Prime_Pushmech:GetSkillEffect(p1, p2)
+function Kinematics_Prime_PushWeapon:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
     local dir = GetDirection(p2 - p1)
     local dirv = DIR_VECTORS[dir]
 
-    
     local final_state = BasePush(p1, dirv)
 
     for i = #final_state, 1, -1 do
@@ -36,11 +55,11 @@ function Prime_Pushmech:GetSkillEffect(p1, p2)
         if moved then
             ret:AddSound("/weapons/charge")
 
-            Prime_Pushmech.AddTrail(p1, p:GetOriginalSpace(), ret)
+            Kinematics_Prime_PushWeapon.AddTrail(p1, p:GetOriginalSpace(), ret)
 
-            Prime_Pushmech.DoAction(p, ret)
+            Kinematics_Prime_PushWeapon.DoAction(p, ret)
 
-            Prime_Pushmech.AddTrail(p:GetOriginalSpace(), p:GetSpace(), ret)
+            Kinematics_Prime_PushWeapon.AddTrail(p:GetOriginalSpace(), p:GetSpace(), ret)
             for j = i, #final_state do
                 local p = final_state[j]
                 if p:IsAlive() then
@@ -57,7 +76,7 @@ function Prime_Pushmech:GetSkillEffect(p1, p2)
 
     return ret
 end
-function Prime_Pushmech.DoAction(p, ret)
+function Kinematics_Prime_PushWeapon.DoAction(p, ret)
     local path = PointList()
 
     for p in PointIter(p:GetOriginalSpace(), p:GetSpace()) do
@@ -67,7 +86,7 @@ function Prime_Pushmech.DoAction(p, ret)
         -- this abuses a bug in the preview code
         -- the preview shows the unit dieing from DAMAGE_DEATH, the execution shows the unit diving charging to its death
         ret:AddCharge(path, NO_DELAY)
-        SafeDamage(p:GetOriginalSpace(), DAMAGE_DEATH, false, ret)
+        utils.SafeDamage(p:GetOriginalSpace(), DAMAGE_DEATH, false, ret)
     else
         -- we do the damage at orig_pos because WEIRD THINGS happen to the preview if we damage at pos.
         -- this sucks because fires and smoke icons are visible when we suppress them
@@ -75,7 +94,7 @@ function Prime_Pushmech.DoAction(p, ret)
     end
 end
 
-function Prime_Pushmech.AddTrail(from, to, ret)
+function Kinematics_Prime_PushWeapon.AddTrail(from, to, ret)
     local dir = GetDirection(to-from)
     local from_plus_one = from+(DIR_VECTORS[dir] or Point(0,0))
     for p in PointIter(from_plus_one, to) do
@@ -102,25 +121,3 @@ function PointIter(from, to)
 end
 
 
-function BasePush(pos, dir)
-    local cur = pos
-    local sim = Simulation:new()
-    local p = sim:PawnAt(pos)
-    while RecursivePush(p:GetId(), dir, sim) do end
-    return sim.sim_pawns
-end
-function RecursivePush(id, dir, sim)
-    local p = sim:PawnWithId(id)
-    local pos = p:GetSpace()
-    local new_pos = pos + dir
-    local move_typ = p:SetSpace(new_pos)
-    local mov_types = {[1]="collision", [2]= "terr_collision", [3]= "dropped", [4]= "valid", [5]= "oob"}
-    local result = false
-    if move_typ == ProxyPawn.UNIT_COLLISION then
-        local collision_pawn = sim:PawnAt(new_pos)
-        return RecursivePush(collision_pawn:GetId(), dir, sim)
-    elseif move_typ == ProxyPawn.VALID or move_typ == ProxyPawn.DROPPED then
-        return true
-    end
-    return false
-end

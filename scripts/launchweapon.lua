@@ -2,8 +2,9 @@
 -- local log = require("log")
 -- log.level = "warn"
 local img = "effects/shotup_fireball.png"
+local utils = Kinematics:require("utils")
 
-Prime_Uppercut = Skill:new{--{{{
+Kinematics_Prime_LaunchWeapon = Skill:new{--{{{
     Class = "Brute",
     Name = "Launch!",
     Icon = "weapons/prime_shift.png",
@@ -18,23 +19,23 @@ Prime_Uppercut = Skill:new{--{{{
     Shielding = false,
     Range = 1, --TOOLTIP INFO
     LaunchSound = "/weapons/shift",
-    CustomTipImage = "Prime_Uppercut_Tooltip",
+    CustomTipImage = "Kinematics_Prime_LaunchWeapon_Tooltip",
 }
 
-Prime_Uppercut_A = Prime_Uppercut:new{
+Kinematics_Prime_LaunchWeapon_A = Kinematics_Prime_LaunchWeapon:new{
     Shielding = true,
-    CustomTipImage = "Prime_Uppercut_Tooltip_A",
+    CustomTipImage = "Kinematics_Prime_LaunchWeapon_Tooltip_A",
 }
-Prime_Uppercut_B = Prime_Uppercut:new{
+Kinematics_Prime_LaunchWeapon_B = Kinematics_Prime_LaunchWeapon:new{
     FriendlyDamage = false
 }
-Prime_Uppercut_AB = Prime_Uppercut:new{
+Kinematics_Prime_LaunchWeapon_AB = Kinematics_Prime_LaunchWeapon:new{
     Shielding = true,
-    CustomTipImage = "Prime_Uppercut_Tooltip_A",
+    CustomTipImage = "Kinematics_Prime_LaunchWeapon_Tooltip_A",
     FriendlyDamage = false
 }
 
-Prime_Uppercut_Tooltip = Skill:new {
+Kinematics_Prime_LaunchWeapon_Tooltip = Skill:new {
     Shielding = false,
     TipImage = {
         Unit = Point(2,2),
@@ -42,50 +43,50 @@ Prime_Uppercut_Tooltip = Skill:new {
         Enemy = Point(2,1),
     }
 }
-Prime_Uppercut_Tooltip_A = Prime_Uppercut_Tooltip:new {
+Kinematics_Prime_LaunchWeapon_Tooltip_A = Kinematics_Prime_LaunchWeapon_Tooltip:new {
     Shielding = true,
 }--}}}
 
-function Prime_Uppercut:GetSkillEffect(p1, p2)--{{{{{{
-    local result = Prime_Uppercut.Punch(p1, p2)
+function Kinematics_Prime_LaunchWeapon:GetSkillEffect(p1, p2)--{{{{{{
+    local result = Kinematics_Prime_LaunchWeapon.Punch(p1, p2)
 
 
     local pawn = Board:GetPawn(p2)
     if pawn and not pawn:IsGuarding() then
-        local state = Prime_Uppercut.MkState(p2,self.FriendlyDamage, pawn:GetId())
-        result:AddScript("Prime_Uppercut.Pre(" .. p1:GetString() .. ", " .. save_table(state) ..  ")")
+        local state = Kinematics_Prime_LaunchWeapon.MkState(p2,self.FriendlyDamage, pawn:GetId())
+        result:AddScript("Kinematics_Prime_LaunchWeapon.Pre(" .. p1:GetString() .. ", " .. save_table(state) ..  ")")
 
         result:AddDelay(1)
-        SafeDamage(p2, 2, false, result)
+        utils.SafeDamage(p2, 2, false, result)
     else
         local post_damage = SpaceDamage(p2, 2)
         post_damage.sAnimation = "explo_fire1"
         result:AddDamage(post_damage)
     end
     if self.Shielding then
-        Prime_Uppercut.AddShield(p1, p2, result)
+        Kinematics_Prime_LaunchWeapon.AddShield(p1, p2, result)
     end
 
     return result
 end--}}}
 
-function Prime_Uppercut:GetTargetArea(point)--{{{
+function Kinematics_Prime_LaunchWeapon:GetTargetArea(point)--{{{
     return Board:GetSimpleReachable(point, 1, self.CornersAllowed)
 end--}}}}}}
 
-function Prime_Uppercut.AddShield(p1, p2, result)
-    local shields = Prime_Uppercut.ShieldPositions(p1, p2)
-    Shield_Stabilizer.Activate(shields, result)
+function Kinematics_Prime_LaunchWeapon.AddShield(p1, p2, result)
+    local shields = Kinematics_Prime_LaunchWeapon.ShieldPositions(p1, p2)
+    Kinematics_Shield_Passive.Activate(shields, result)
 end
 
-function Prime_Uppercut.HideUnit(id)--{{{
+function Kinematics_Prime_LaunchWeapon.HideUnit(id)--{{{
     local pawn = Board:GetPawn(id)
     pawn:SetSpace(Point(32,32))
     pawn:SetActive(false)
     pawn:ClearQueued()
 end--}}g
 
-function Prime_Uppercut.RestoreUnit(state)--{{{
+function Kinematics_Prime_LaunchWeapon.RestoreUnit(state)--{{{
     local pawn = Board:GetPawn(state.Id)
     if pawn then
         pawn:SetSpace(state.Space)
@@ -96,22 +97,22 @@ function Prime_Uppercut.RestoreUnit(state)--{{{
     end
 end--}}}
 
-function Prime_Uppercut.Punch(p1, p2)
+function Kinematics_Prime_LaunchWeapon.Punch(p1, p2)
     local result = SkillEffect()
 
     local punch = SpaceDamage(p2)
     result:AddMelee(p1, punch, NO_DELAY)
     return result
 end
-function Prime_Uppercut.Pre(p0, state)--{{{
-    local launcheff = Prime_Uppercut.LaunchFX(state, p0)
+function Kinematics_Prime_LaunchWeapon.Pre(p0, state)--{{{
+    local launcheff = Kinematics_Prime_LaunchWeapon.LaunchFX(state, p0)
 
-    launcheff:AddScript("Prime_Uppercut.QueueEvent("..save_table(state)..")")
+    launcheff:AddScript("Kinematics_Prime_LaunchWeapon.QueueEvent("..save_table(state)..")")
     launcheff:AddDelay(FULL_DELAY)
 
     Board:AddEffect(launcheff)
 end--}}}
-function Prime_Uppercut.LaunchFX(state, p0)
+function Kinematics_Prime_LaunchWeapon.LaunchFX(state, p0)
     local launcheff = SkillEffect()
     launcheff.piOrigin = p0
 
@@ -120,12 +121,12 @@ function Prime_Uppercut.LaunchFX(state, p0)
     leap:push_back(p0)
     launcheff:AddBoardShake(3)
     launcheff:AddLeap(leap, 0.75)
-    launcheff:AddScript( "Prime_Uppercut.HideUnit("..state.Id..")")
+    launcheff:AddScript( "Kinematics_Prime_LaunchWeapon.HideUnit("..state.Id..")")
     launcheff:AddSound( "/props/satellite_launch")
     launcheff:AddDelay(1)
 
     local visual = SpaceDamage(p0, DAMAGE_ZERO)
-    visual.sAnimation = "ExploUpper"
+    visual.sAnimation = "Kinematics_ExploUpper"
     launcheff:AddDamage(visual)
 
     local liftoff = SpaceDamage(Point(-1-p0.y, -1-p0.x), DAMAGE_ZERO)
@@ -136,25 +137,25 @@ function Prime_Uppercut.LaunchFX(state, p0)
     return launcheff
 end
 
-function Prime_Uppercut.Post(state)
+function Kinematics_Prime_LaunchWeapon.Post(state)
     local eff = SkillEffect()
-    Prime_Uppercut.PostEffect(eff, state)
+    Kinematics_Prime_LaunchWeapon.PostEffect(eff, state)
     Board:AddEffect(eff)
 end
-function Prime_Uppercut.PostEffect(eff, state)--{{{
+function Kinematics_Prime_LaunchWeapon.PostEffect(eff, state)--{{{
     eff.piOrigin = Point(-10-state.Space.y,-10-state.Space.x)
     eff:AddSound("/props/satellite_launch")
 
-    Prime_Uppercut.FriendlyFireUpgrade(state, eff)
+    Kinematics_Prime_LaunchWeapon.FriendlyFireUpgrade(state, eff)
     eff:AddBoardShake(1.1)
     local dam = SpaceDamage(state.Space, DAMAGE_ZERO)
     eff:AddArtillery(dam, img)
     eff:AddDelay(0.1)
-    Prime_Uppercut.ImpactFX(eff, state.Space)
+    Kinematics_Prime_LaunchWeapon.ImpactFX(eff, state.Space)
 
     eff:AddEmitter(state.Space, "Emitter_Unit_Crashed")
     eff:AddBoardShake(1)
-    local script = "Prime_Uppercut.RestoreUnit("..save_table(state)..")"
+    local script = "Kinematics_Prime_LaunchWeapon.RestoreUnit("..save_table(state)..")"
     eff:AddScript(script)
     local PathProf = Board:GetPawn(state.Id):GetPathProf()
     local impact_damage = SpaceDamage(state.Space, 2)
@@ -176,7 +177,7 @@ function Prime_Uppercut.PostEffect(eff, state)--{{{
 end--}}}
 
 
-function Prime_Uppercut.ImpactFX(eff, p)--{{{
+function Kinematics_Prime_LaunchWeapon.ImpactFX(eff, p)--{{{
     for i = -2, 2 do
         for j = -2, 2 do
             local cur = p + Point(i,j)
@@ -188,36 +189,36 @@ function Prime_Uppercut.ImpactFX(eff, p)--{{{
     end
 end--}}}
 
-function Prime_Uppercut_Tooltip:GetSkillEffect(p1, p2)--{{{
+function Kinematics_Prime_LaunchWeapon_Tooltip:GetSkillEffect(p1, p2)--{{{
     local eff = SkillEffect()
     local damage = SpaceDamage()
-    Prime_Uppercut_Tooltip.Punch(self.Shielding)
+    Kinematics_Prime_LaunchWeapon_Tooltip.Punch(self.Shielding)
     eff:AddDelay(5)
     return eff
 end
-function Prime_Uppercut_Tooltip.Punch(shielding)
+function Kinematics_Prime_LaunchWeapon_Tooltip.Punch(shielding)
     local p1 = Point(2, 2)
     local p2 = Point(2, 1)
-    local eff = Prime_Uppercut.Punch(p1, p2)
-    eff:AddScript("Prime_Uppercut_Tooltip.Launch("..tostring(shielding)..")")
+    local eff = Kinematics_Prime_LaunchWeapon.Punch(p1, p2)
+    eff:AddScript("Kinematics_Prime_LaunchWeapon_Tooltip.Launch("..tostring(shielding)..")")
     Board:AddEffect(eff)
 end
-function Prime_Uppercut_Tooltip.Launch(shielding)
+function Kinematics_Prime_LaunchWeapon_Tooltip.Launch(shielding)
     local p1 = Point(2, 2)
     local p2 = Point(2, 1)
     local pawn = Board:GetPawn(p2)
     local id = pawn:GetId()
 
-    local state = Prime_Uppercut.MkState(p2, false, id)
-    local eff = Prime_Uppercut.LaunchFX(state, p1)
+    local state = Kinematics_Prime_LaunchWeapon.MkState(p2, false, id)
+    local eff = Kinematics_Prime_LaunchWeapon.LaunchFX(state, p1)
     if shielding then
-        eff:AddScript("Prime_Uppercut_Tooltip.Shield("..id..")")
+        eff:AddScript("Kinematics_Prime_LaunchWeapon_Tooltip.Shield("..id..")")
     else
-        eff:AddScript("Prime_Uppercut_Tooltip.Land("..id..")")
+        eff:AddScript("Kinematics_Prime_LaunchWeapon_Tooltip.Land("..id..")")
     end
     Board:AddEffect(eff)
 end--}}}
-function Prime_Uppercut.ShieldPositions(p1, p2)
+function Kinematics_Prime_LaunchWeapon.ShieldPositions(p1, p2)
     local back_dir = GetDirection(p1 - p2)
     local dir_vec = DIR_VECTORS[back_dir]
     local shieldpos = p1 + dir_vec
@@ -225,37 +226,37 @@ function Prime_Uppercut.ShieldPositions(p1, p2)
     local shields = { {{Space = shieldpos + dir_vec + dir_vec, Dir = back_dir}}, {{Space = shieldpos + dir_vec, Dir = back_dir}}, {{Space = shieldpos, Dir = back_dir}}}
     return shields
 end
-function Prime_Uppercut_Tooltip.Shield(id)
+function Kinematics_Prime_LaunchWeapon_Tooltip.Shield(id)
     local p1 = Point(2, 2)
     local p2 = Point(2, 1)
     local eff = SkillEffect()
 
-    local shields = Prime_Uppercut.ShieldPositions(p1, p2)
-    Shield_Stabilizer.SpawnShields(shields, eff, "PawnShield")
+    local shields = Kinematics_Prime_LaunchWeapon.ShieldPositions(p1, p2)
+    Kinematics_Shield_Passive.SpawnShields(shields, eff, "Kinematics_PawnShield")
 
-    eff:AddScript("Prime_Uppercut_Tooltip.Land("..id..")")
+    eff:AddScript("Kinematics_Prime_LaunchWeapon_Tooltip.Land("..id..")")
     Board:AddEffect(eff)
 
 end
-function Prime_Uppercut_Tooltip.Land(id)
+function Kinematics_Prime_LaunchWeapon_Tooltip.Land(id)
     local p1 = Point(2, 2)
     local p2 = Point(2, 1)
 
     local pawn = Board:GetPawn(id)
-    local state = Prime_Uppercut.MkState(p2, false, pawn:GetId())
+    local state = Kinematics_Prime_LaunchWeapon.MkState(p2, false, pawn:GetId())
     local eff = SkillEffect()
     eff:AddDelay(0.74)
-    Prime_Uppercut.PostEffect(eff, state)
+    Kinematics_Prime_LaunchWeapon.PostEffect(eff, state)
     Board:AddEffect(eff)
 end
 
 
-function Prime_Uppercut_Tooltip:GetTargetArea()--{{{
+function Kinematics_Prime_LaunchWeapon_Tooltip:GetTargetArea()--{{{
     local ret = PointList()
     ret:push_back(Point(2,1))
     return ret
 end--}}}
-function Prime_Uppercut.FriendlyFireUpgrade(state, eff)
+function Kinematics_Prime_LaunchWeapon.FriendlyFireUpgrade(state, eff)
     local pawn = Board:GetPawn(state.Space)
     if not state.FriendlyDamage and pawn and (pawn:GetTeam() == TEAM_PLAYER) then
         local dmg = SpaceDamage(state.Space, DAMAGE_ZERO)

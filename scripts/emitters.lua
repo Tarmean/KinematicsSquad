@@ -1,4 +1,3 @@
-
 Emitter_Push_0 = Emitter:new{   --up
     image = "combat/tiles_grass/particle.png",
     -- x = -60,

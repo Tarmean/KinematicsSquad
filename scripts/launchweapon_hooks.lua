@@ -20,7 +20,7 @@ local function ApplyEffect(env)--{{{
     if IsEffect(env) then
         CurrentAttack = env.Injected[1]
         table.remove(env.Injected,1)
-        Prime_Uppercut.Post(CurrentAttack)
+        Kinematics_Prime_LaunchWeapon.Post(CurrentAttack)
         return IsEffect(env)
     else
         return false
@@ -67,11 +67,11 @@ function ResetUppercut(env)
     PendingEvents = {}
 end--}}}
 
-function Prime_Uppercut.QueueEvent(effect)--{{{
+function Kinematics_Prime_LaunchWeapon.QueueEvent(effect)--{{{
     PendingEvents[#PendingEvents+1] = effect
 end--}}}
 
-function Prime_Uppercut.MkState(Space, FriendlyDamage, Id)--{{{
+function Kinematics_Prime_LaunchWeapon.MkState(Space, FriendlyDamage, Id)--{{{
     return {
         CombatIcon = "combat/tile_icon/tile_airstrike.png", 
         Desc = "uppercut",

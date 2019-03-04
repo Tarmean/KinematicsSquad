@@ -1,43 +1,45 @@
 -- local inspect = require("inspect")
-Shield_Stabilizer = Skill:new {
+local utils = Kinematics:require("utils")
+local Simulation = Kinematics:require("matrix")
+Kinematics_Shield_Passive = Skill:new {
     Name = "Shield Stabilizer",
     Passive = "Flame_Immune",
-    Icon = "weapons/shield_stabilizer.png",
+    Icon = "weapons/kinematics_shield_stabilizer.png",
     PowerCost = 1,
     Upgrades = 2,
     UpgradeCost = {2, 3}
 }
-Shield_Stabilizer_A = Shield_Stabilizer:new {}
-Shield_Stabilizer_B = Shield_Stabilizer:new {}
-Shield_Stabilizer_AB = Shield_Stabilizer:new {}
+Kinematics_Shield_Passive_A = Kinematics_Shield_Passive:new {}
+Kinematics_Shield_Passive_B = Kinematics_Shield_Passive:new {}
+Kinematics_Shield_Passive_AB = Kinematics_Shield_Passive:new {}
 
 
-function PassiveType()
-    for s in ActiveWeapons() do
-        if s == "Shield_Stabilizer" then
-            return "PawnShield"
-        elseif s == "Shield_Stabilizer_A" then
-            return "PawnShield_A"
-        elseif s == "Shield_Stabilizer_B" then
-            return "PawnShield_B"
-        elseif s == "Shield_Stabilizer_AB" then
-            return "PawnShield_AB"
+local function PassiveType()
+    for s in utils.ActiveWeapons() do
+        if s == "Kinematics_Shield_Passive" then
+            return "Kinematics_PawnShield"
+        elseif s == "Kinematics_Shield_Passive_A" then
+            return "Kinematics_PawnShield_A"
+        elseif s == "Kinematics_Shield_Passive_B" then
+            return "Kinematics_PawnShield_B"
+        elseif s == "Kinematics_Shield_Passive_AB" then
+            return "Kinematics_PawnShield_AB"
         end
     end
     return nil
 end
-function Shield_Stabilizer.Activate(tiles, ret)
+function Kinematics_Shield_Passive.Activate(tiles, ret)
     local kind = PassiveType()
 
     if kind then
-        Shield_Stabilizer.SpawnShields(tiles, ret, kind)
+        Kinematics_Shield_Passive.SpawnShields(tiles, ret, kind)
     else
-        Shield_Stabilizer.ApplyShields(tiles, ret)
+        Kinematics_Shield_Passive.ApplyShields(tiles, ret)
     end
 
 end
 
-function Shield_Stabilizer.ApplyShields(tiles, ret)
+function Kinematics_Shield_Passive.ApplyShields(tiles, ret)
     local damage = SpaceDamage()
     damage.iShield = 1
     for _, s in ipairs(tiles) do
@@ -50,7 +52,7 @@ end
 local hash_point = function (point)
     return point.x + 128 * point.y
 end
-function Shield_Stabilizer.SpawnShields(tiles, ret, shield)
+function Kinematics_Shield_Passive.SpawnShields(tiles, ret, shield)
     local affected_tiles = {}
     local sim = Simulation:new()
     for _, s in ipairs(tiles) do
@@ -101,55 +103,20 @@ function Shield_Stabilizer.SpawnShields(tiles, ret, shield)
                 end
             end
             ret:AddDamage(damage)
-            Shield_Stabilizer.DoShield(t.Space, ret, shield)
+            Kinematics_Shield_Passive.DoShield(t.Space, ret, shield)
         end
         ret:AddDelay(none_shielded and NO_DELAY or FULL_DELAY)
     end
 end
 
-local function IsBlocked(p, pathprof)
-    return (InvalidTerrain(p, pathprof) == TERR_COLLISION) or Board:IsPawnSpace(p)
-end
-function Shield_Stabilizer.DoPush(p, ls, ret, dir)
-
-    local pawn = Board:GetPawn(p)
-    local show_shield = false
-    if dir == DIR_NONE and pawn then
-        show_shield = false
-    elseif pawn then
-        local p_next = p + DIR_VECTORS[dir]
-        local guard = pawn:IsGuarding()
-        local collision =  not guard and IsBlocked(p_next, pawn:GetPathProf()) 
-        local moved = not collision and not guard
-        if moved then
-            ls[#ls+1] = Board:GetSimplePath(p, p_next)
-        end
-        local push_free = moved or (collision and (pawn:GetHealth() == 1))
-        local friendly_building = guard and pawn:IsPlayer()
-        show_shield = push_free or friendly_building
-    else
-        show_shield = true
-    end
-    local damage = SpaceDamage(p, DAMAGE_ZERO, dir)
-    if show_shield then
-        local terr = Board:GetTerrain(p)
-        if terr ~= TERRAIN_HOLE and terr ~= TERRAIN_ACID and terr ~= TERRAIN_LAVA and terr ~= TERRAIN_WATER then
-            damage.sImageMark = "combat/shield_front.png"
-        end
-    end
-    if (dir ~= DIR_NONE) then 
-        damage.sAnimation = "airpush_"..dir
-    end
-    ret:AddDamage(damage)
-end
-function Shield_Stabilizer.DoShield(p, ret, shield)
+function Kinematics_Shield_Passive.DoShield(p, ret, shield)
     local damage = SpaceDamage(p)
-    damage.sScript = "Shield_Stabilizer.DoSpawn("..p:GetString() .. ",\""..shield.."\")"
+    damage.sScript = "Kinematics_Shield_Passive.DoSpawn("..p:GetString() .. ",\""..shield.."\")"
     damage.sSound = "/props/shield_activated"
     ret:AddDamage(damage)
     ret:AddBounce(p, -3)
 end
-function Shield_Stabilizer.DoSpawn(p, shield)
+function Kinematics_Shield_Passive.DoSpawn(p, shield)
     if not Board:IsBlocked(p, PATH_GROUND) then
         local pawn = PAWN_FACTORY:CreatePawn(shield)
         Board:AddPawn(pawn, p)

@@ -1,6 +1,6 @@
 
 -- local inspect = require("inspect")
-Prime_ShieldWall = Skill:new{  
+Kinematics_Prime_ShieldWeapon = Skill:new{  
     Class = "Prime",
     Name = "Shield Mech",
     Icon = "weapons/prime_shieldbash.png",
@@ -26,17 +26,10 @@ Prime_ShieldWall = Skill:new{
     },
     WallSize = 1,
 }
-Prime_ShieldWall_A = Prime_ShieldWall:new {
+Kinematics_Prime_ShieldWeapon_A = Kinematics_Prime_ShieldWeapon:new {
     WallSize = 2,
 }
--- Prime_ShieldWall_B = Prime_ShieldWall:new {
---     Shield = "PermShield",
--- }
--- Prime_ShieldWall_AB = Prime_ShieldWall:new {
---     WallSize = 2,
---     Shield = "PermShield",
--- }
-function Prime_ShieldWall:GetSkillEffect(p1, p2)
+function Kinematics_Prime_ShieldWeapon:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
     local dir = GetDirection(p2 - p1)
     local dir2 = (dir+1)% 4
@@ -46,11 +39,10 @@ function Prime_ShieldWall:GetSkillEffect(p1, p2)
     for i = 1, self.WallSize do
         tiles[#tiles+1] = {{Space = p2 + lv * i, Dir = dir}, { Space =  p2 - lv * i, Dir = dir}}
     end
-    Shield_Stabilizer.Activate(tiles,ret, dir)
+    Kinematics_Shield_Passive.Activate(tiles,ret, dir)
 
     return ret
 end
-function Prime_ShieldWall:GetTargetArea(point)
+function Kinematics_Prime_ShieldWeapon:GetTargetArea(point)
     return Board:GetSimpleReachable(point, 1, self.CornersAllowed)
 end
-

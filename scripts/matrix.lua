@@ -1,5 +1,14 @@
 -- local inspect = require("inspect")
-Simulation = {}
+local Simulation = {
+    UNIT_COLLISION = 1,
+    TERR_COLLISION = 2,
+    DROPPED = 3,
+    VALID = 4,
+    OOB = 5,
+    GUARDING = 6
+}
+
+local ProxyPawn = {}
 function Simulation:Setup()
     self.sim_pawns = {}
     self.sim_terrain = {}
@@ -49,7 +58,7 @@ function Simulation:PawnWithId(pawn_id)
     end
     return self:_AddPawnFromIdent(pawn_id)
 end
-ProxyPawn = {}
+
 function ProxyPawn:new (pawn, simulation, o)
   o = o or {}   -- create object if user does not provide one
   setmetatable(o, self)
@@ -134,61 +143,53 @@ function ProxyPawn:GetPathProf()
     end
     return self.pathprof
 end
-local TERR_COLLISION = 2
-local TERR_DROPPED = 3
 local PATH_LEAPER = 6
 local INVALID_TERRAINS =
     { [PATH_FLYER] = -- 1
-        { [TERRAIN_BUILDING] = TERR_COLLISION
-        , [TERRAIN_MOUNTAIN] = TERR_COLLISION
+        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
+        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
         }
     , [PATH_GROUND] = -- 0
-        { [TERRAIN_BUILDING] = TERR_COLLISION
-        , [TERRAIN_MOUNTAIN] = TERR_COLLISION
-        , [TERRAIN_ACID] = TERR_DROPPED
-        , [TERRAIN_HOLE] = TERR_DROPPED
-        , [TERRAIN_LAVA] = TERR_DROPPED
-        , [TERRAIN_WATER] = TERR_DROPPED
+        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
+        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
+        , [TERRAIN_ACID] = Simulation.DROPPED
+        , [TERRAIN_HOLE] = Simulation.DROPPED
+        , [TERRAIN_LAVA] = Simulation.DROPPED
+        , [TERRAIN_WATER] = Simulation.DROPPED
         }
     , [PATH_LEAPER] = -- 6
-        { [TERRAIN_BUILDING] = TERR_COLLISION
-        , [TERRAIN_MOUNTAIN] = TERR_COLLISION
-        , [TERRAIN_ACID] = TERR_DROPPED
-        , [TERRAIN_HOLE] = TERR_DROPPED
-        , [TERRAIN_LAVA] = TERR_DROPPED
-        , [TERRAIN_WATER] = TERR_DROPPED
+        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
+        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
+        , [TERRAIN_ACID] = Simulation.DROPPED
+        , [TERRAIN_HOLE] = Simulation.DROPPED
+        , [TERRAIN_LAVA] = Simulation.DROPPED
+        , [TERRAIN_WATER] = Simulation.DROPPED
         }
     , [PATH_MASSIVE] = -- 2
-        { [TERRAIN_BUILDING] = TERR_COLLISION
-        , [TERRAIN_MOUNTAIN] = TERR_COLLISION
-        , [TERRAIN_HOLE]     = TERR_COLLISION
+        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
+        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
+        , [TERRAIN_HOLE]     = Simulation.TERR_COLLISION
         }
     , [PATH_PHASING] = {} -- 9
     , [PATH_PROJECTILE] = -- 3
-        { [TERRAIN_BUILDING] = TERR_COLLISION
-        , [TERRAIN_MOUNTAIN] = TERR_COLLISION
+        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
+        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
         }
     , [PATH_ROADRUNNER] = -- 4
-        { [TERRAIN_BUILDING] = TERR_COLLISION
-        , [TERRAIN_MOUNTAIN] = TERR_COLLISION
-        , [TERRAIN_HOLE] = TERR_COLLISION
+        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
+        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
+        , [TERRAIN_HOLE] = Simulation.TERR_COLLISION
         }
     }
 
-ProxyPawn.UNIT_COLLISION = 1
-ProxyPawn.TERR_COLLISION = 2
-ProxyPawn.DROPPED = 3
-ProxyPawn.VALID = 4
-ProxyPawn.OOB = 5
-ProxyPawn.GUARDING = 6
 function ProxyPawn:CheckSpaceFree(pos)
     if self.simulation:PawnAt(pos) then
-        return ProxyPawn.UNIT_COLLISION
+        return Simulation.UNIT_COLLISION
     end
     local terr_type = self.simulation:TerrainAt(pos)
     local terr_map = INVALID_TERRAINS[self:GetPathProf()]
     local invalid_result = terr_map and terr_map[terr_type]
-    local result =  invalid_result or ProxyPawn.VALID
+    local result =  invalid_result or Simulation.VALID
     return result
 end
 function ProxyPawn:GetOriginalSpace()
@@ -198,32 +199,32 @@ function ProxyPawn:SetSpace(pos)
     -- make sure to call GetSpace before setting it
     self:GetSpace()
     if not (Board:IsValid(pos)) then
-        return ProxyPawn.OOB
+        return Simulation.OOB
     end
     local result = self:CheckSpaceFree(pos)
-    if result == ProxyPawn.DROPPED then
+    if result == Simulation.DROPPED then
         self.space = pos
         self.is_dropped = true
         self.is_alive = false
-    elseif result == ProxyPawn.VALID then
+    elseif result == Simulation.VALID then
         self.space = pos
     end
     return result
 end
 function ProxyPawn:Shove(dir)
     if self:IsGuarding() then
-        return ProxyPawn.GUARDING
+        return Simulation.GUARDING
     end
     local dirv = DIR_VECTORS[dir]
     if not dirv then return end
     local old_pos = self:GetSpace()
     local new_pos = old_pos + dirv
     local res = self:SetSpace(new_pos)
-    if res == ProxyPawn.UNIT_COLLISION then
+    if res == Simulation.UNIT_COLLISION then
         local other = self.simulation:PawnAt(new_pos)
         other:DamageBy(1)
         self:DamageBy(1)
-    elseif res == ProxyPawn.TERR_COLLISION then
+    elseif res == Simulation.TERR_COLLISION then
         self:DamageBy(1)
     end
     return res
@@ -231,3 +232,5 @@ end
 function ProxyPawn:HasMoved()
     return self:GetSpace() ~= self:GetOriginalSpace()
 end
+
+return Simulation

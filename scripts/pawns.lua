@@ -1,49 +1,50 @@
-ShieldWallMech = {
+local utils = Kinematics:require("utils")
+Kinematics_ShieldWallMech = {
     Name = "Guardian Mech",
     Class = "Prime",
     Health = 3,
     MoveSpeed = 3,
     Image = "MechGuard",
     ImageOffset = 2,
-    SkillList = { "Prime_ShieldWall" },
+    SkillList = { "Kinematics_Prime_ShieldWeapon" },
     SoundLocation = "/mech/prime/punch_mech/",
     DefaultTeam = TEAM_PLAYER,
     ImpactMaterial = IMPACT_METAL,
     Massive = true,
 }
-AddPawn("ShieldWallMech")
-UpperCutMech = {
+AddPawn("Kinematics_ShieldWallMech")
+Kinematics_UpperCutMech = {
     Name = "Launcher Mech",
     Class = "Brute",
     Health = 3,
     MoveSpeed = 3,
-    Image = "MechLaunch",
+    Image = "Kinematics_MechLaunch",
     ImageOffset = 2,
-    SkillList = { "Prime_Uppercut" },
+    SkillList = { "Kinematics_Prime_LaunchWeapon" },
     SoundLocation = "/mech/prime/rock_mech/",
     DefaultTeam = TEAM_PLAYER,
     ImpactMaterial = IMPACT_METAL,
     Massive = true
 }
-AddPawn("UpperCutMech")
+AddPawn("Kinematics_UpperCutMech")
 
-TurbineMech = {
+Kinematics_TurbineMech = {
     Name = "Turbine Mech",
     Class = "Science",
     MoveSpeed = 4,
     Health = 2,
-    Image = "MechPush",
+    Image = "Kinematics_MechPush",
     ImageOffset = 2,
-    SkillList = { "Prime_Pushmech", "Shield_Stabilizer" },
+    SkillList = { "Kinematics_Prime_PushWeapon", "Kinematics_Shield_Passive" },
     SoundLocation = "/mech/science/science_mech/",
     DefaultTeam = TEAM_PLAYER,
     ImpactMaterial = IMPACT_METAL,
     Massive = true,
     Flying = true,
 }
-AddPawn("TurbineMech")
+AddPawn("Kinematics_TurbineMech")
 
-function copy (t) -- shallow-copy a table
+local function copy (t) -- shallow-copy a table
     if type(t) ~= "table" then return t end
     local meta = getmetatable(t)
     local target = {}
@@ -51,13 +52,13 @@ function copy (t) -- shallow-copy a table
     setmetatable(target, meta)
     return target
 end
-PawnShield = {
-    SkillList = { "SelfHarm" },
+Kinematics_PawnShield = {
+    SkillList = { "Kinematics_SelfHarm" },
     Name = "Shield",
     Class  = "Prime",
     Health = 1,
     MoveSpeed = 0,
-    Image = "shield1",
+    Image = "Kinematics_shield1",
     ImageOffset = 8,
     DefaultTeam = TEAM_NONE,
 	Corporate = true,
@@ -68,71 +69,46 @@ PawnShield = {
     IgnoreFire = true,
     IgnoreSmoke = true,
 }
-PawnShield_A = copy(PawnShield)
-PawnShield_B = copy(PawnShield)
-PawnShield_AB = copy(PawnShield)
-PawnShield_A.Health = 2
-PawnShield_B.DefaultTeam = TEAM_PLAYER
-PawnShield_AB.Health = 2
-PawnShield_AB.DefaultTeam = TEAM_PLAYER
-AddPawn("PawnShield") 
-AddPawn("PawnShield_A") 
-AddPawn("PawnShield_B") 
-AddPawn("PawnShield_AB") 
-function PawnShield.OverwriteTargetScore(skill, spaceDamage, queued)
+Kinematics_PawnShield_A = copy(Kinematics_PawnShield)
+Kinematics_PawnShield_B = copy(Kinematics_PawnShield)
+Kinematics_PawnShield_AB = copy(Kinematics_PawnShield)
+Kinematics_PawnShield_A.Health = 2
+Kinematics_PawnShield_B.DefaultTeam = TEAM_PLAYER
+Kinematics_PawnShield_AB.Health = 2
+Kinematics_PawnShield_AB.DefaultTeam = TEAM_PLAYER
+AddPawn("Kinematics_PawnShield") 
+AddPawn("Kinematics_PawnShield_A") 
+AddPawn("Kinematics_PawnShield_B") 
+AddPawn("Kinematics_PawnShield_AB") 
+function Kinematics_PawnShield.OverwriteTargetScore(skill, spaceDamage, queued)
     local target = spaceDamage.loc
     if not target then return end
     local target_pawn = Board:GetPawn(target)
     if not target_pawn then return end
-    if modApi:stringStartsWith(target_pawn:GetType(), "PawnShield") then
+    if modApi:stringStartsWith(target_pawn:GetType(), "Kinematics_PawnShield") then
         return 0
     end
 end
 
-Suicide = Skill:new {
+Kinematics_SelfHarm = Skill:new {
     PathSize = 1,
-    Description = "Destroyed at end of turn",
+    Description = "Decays at end of turn",
     Damage = 1,
     LaunchSound = "",
 }
-function Suicide:GetSkillEffect(p1, p2)
+function Kinematics_SelfHarm:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
-    local damage = SpaceDamage(p1)
-    damage.bHide= true
-    damage.bHidePath= true
-    damage.sScript = "Board:RemovePawn("..p1:GetString()..")"
-    damage.sSound = "impact/generic/general"
-    ret:AddQueuedDamage(damage)
-    return ret
-end
-function Suicide:GetTargetArea(p)
-    local ret = PointList()
-    ret:push_back(p)
-    return ret
-end
-function Suicide:GetTargetScore(p1, p2)
-    return 100
-end
-
-SelfHarm = Skill:new {
-    PathSize = 1,
-    Description = "Destroyed at end of turn",
-    Damage = 1,
-    LaunchSound = "",
-}
-function SelfHarm:GetSkillEffect(p1, p2)
-    local ret = SkillEffect()
-    QueuedSafeDamage(p1, 1, ret)
+    utils.QueuedSafeDamage(p1, 1, ret)
     local dam = SpaceDamage()
     dam.sSound = "impact/generic/general"
     ret:AddQueuedDamage(dam)
     return ret
 end
-function SelfHarm:GetTargetArea(p)
+function Kinematics_SelfHarm:GetTargetArea(p)
     local ret = PointList()
     ret:push_back(p)
     return ret
 end
-function SelfHarm:GetTargetScore(p1, p2)
+function Kinematics_SelfHarm:GetTargetScore(p1, p2)
     return 100
 end

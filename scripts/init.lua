@@ -1,3 +1,8 @@
+Kinematics = {}
+function Kinematics:require(ident)
+    return require(self.scriptPath .. ident)
+end
+
 local function RequireAll(self)
     return function(ls)
         for _, v in ipairs(ls) do
@@ -13,48 +18,47 @@ local function init(self)
     { "Crash Site",
         "Unit will land here, killing anything it lands on"
     }
+    Kinematics.scriptPath = self.scriptPath
 
-    modApi:appendAsset("img/units/player/mech_launch_ns.png",self.resourcePath.."img/launcher_ns.png")
-    modApi:appendAsset("img/units/player/mech_launch.png",self.resourcePath.."img/launcher.png")
-    modApi:appendAsset("img/units/player/mech_launch_h.png",self.resourcePath.."img/launcher_h.png")
-    modApi:appendAsset("img/units/player/mech_launch_a.png",self.resourcePath.."img/launcher_a.png")
-    modApi:appendAsset("img/units/player/mech_launch_w.png",self.resourcePath.."img/launcher_w.png")
-    modApi:appendAsset("img/units/player/mech_launch_broken.png",self.resourcePath.."img/launcher_broken.png")
-    modApi:appendAsset("img/units/player/mech_launch_broken_w.png",self.resourcePath.."img/launcher_broken_w.png")
-    modApi:appendAsset("img/units/aliens/shield_1.png",self.resourcePath.."img/shield_solid_1.png")
-    modApi:appendAsset("img/units/player/mech_push.png",self.resourcePath.."img/pushmech.png")
-    modApi:appendAsset("img/units/player/mech_push_a.png",self.resourcePath.."img/pushmech_a.png")
-    modApi:appendAsset("img/units/player/mech_push_ns.png",self.resourcePath.."img/pushmech_ns.png")
-    modApi:appendAsset("img/units/player/mech_push_h.png",self.resourcePath.."img/pushmech_h.png")
-    modApi:appendAsset("img/units/player/mech_push_broken_w.png",self.resourcePath.."img/pushmech_broken_w.png")
-    modApi:appendAsset("img/units/player/mech_push_broken.png",self.resourcePath.."img/pushmech_broken.png")
-    modApi:appendAsset("img/weapons/shield_stabilizer.png",self.resourcePath.."img/shield_stabilizer.png")
+    modApi:appendAsset("img/units/player/mech_kinematics_launch_ns.png",self.resourcePath.."img/launcher_ns.png")
+    modApi:appendAsset("img/units/player/mech_kinematics_launch.png",self.resourcePath.."img/launcher.png")
+    modApi:appendAsset("img/units/player/mech_kinematics_launch_h.png",self.resourcePath.."img/launcher_h.png")
+    modApi:appendAsset("img/units/player/mech_kinematics_launch_a.png",self.resourcePath.."img/launcher_a.png")
+    modApi:appendAsset("img/units/player/mech_kinematics_launch_w.png",self.resourcePath.."img/launcher_w.png")
+    modApi:appendAsset("img/units/player/mech_kinematics_launch_broken.png",self.resourcePath.."img/launcher_broken.png")
+    modApi:appendAsset("img/units/player/mech_kinematics_launch_broken_w.png",self.resourcePath.."img/launcher_broken_w.png")
+    modApi:appendAsset("img/units/aliens/kinematics_shield_1.png",self.resourcePath.."img/shield_solid_1.png")
+    modApi:appendAsset("img/units/player/mech_kinematics_push.png",self.resourcePath.."img/pushmech.png")
+    modApi:appendAsset("img/units/player/mech_kinematics_push_a.png",self.resourcePath.."img/pushmech_a.png")
+    modApi:appendAsset("img/units/player/mech_kinematics_push_ns.png",self.resourcePath.."img/pushmech_ns.png")
+    modApi:appendAsset("img/units/player/mech_kinematics_push_h.png",self.resourcePath.."img/pushmech_h.png")
+    modApi:appendAsset("img/units/player/mech_kinematics_push_broken_w.png",self.resourcePath.."img/pushmech_broken_w.png")
+    modApi:appendAsset("img/units/player/mech_kinematics_push_broken.png",self.resourcePath.."img/pushmech_broken.png")
+    modApi:appendAsset("img/weapons/kinematics_shield_stabilizer.png",self.resourcePath.."img/shield_stabilizer.png")
     -- package.cpath = self.resourcePath .. 'lib/?.dll;' .. package.cpath
     local f = assert(package.loadlib(self.resourcePath.. "/lib/utils.dll", "luaopen_utils"))()
     RequireAll(self){
-        "utils",
         "animations",
         "emitters",
-        "push_passive",
+        "shield_passive",
         "shield_overrides",
-        "doublepunch",
-        "shieldbot",
-        "uppercut",
-        "uppercut_hooks",
+        "pushweapon",
+        "shieldweapon",
+        "launchweapon",
+        "launchweapon_hooks",
         "pawns",
-        "scorelist_overwrite",
-        "matrix"
+        "scorelist_overwrite"
     }
 
 end
 
 local function load(self, options, version)
-    modApi:addSquad({"Kinematics","UpperCutMech","ShieldWallMech","TurbineMech"},"Kinematics","These mechs counter enemies until they have an opening for the perfect combo attack.", self.resourcePath.."img/pushmech_ns.png")
+    modApi:addSquad({"Kinematics","Kinematics_UpperCutMech","Kinematics_ShieldWallMech","Kinematics_TurbineMech"},"Kinematics","These mechs counter enemies until they have an opening for the perfect combo attack.", self.resourcePath.."img/pushmech_ns.png")
     modApi:addMissionStartHook(function(m)
         ResetUppercut(m.LiveEnvironment)
     end)
 
-    RegisterScoreListOverride(PawnShield.OverwriteTargetScore)
+    Kinematics.RegisterScoreListOverride(Kinematics_PawnShield.OverwriteTargetScore)
 end
 
 

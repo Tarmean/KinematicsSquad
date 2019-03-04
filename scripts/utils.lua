@@ -11,7 +11,8 @@
 -- TERRAIN_SAND     7
 -- TERRAIN_WATER    3
 
-function Pawns()
+local mod = {}
+function mod.Pawns()
     local pawns = extract_table(Board:GetPawns(TEAM_ANY))
     for _, id in ipairs(pawns) do
         local pawn = Board:GetPawn(id)
@@ -20,7 +21,7 @@ function Pawns()
     end
 end
 local DamageableTerrain = {[TERRAIN_ICE] = true, [TERRAIN_MOUNTAIN] = true, [TERRAIN_SAND] = true, [TERRAIN_FOREST]=true}
-function SafeBase(pos, amount, hide)
+function mod.SafeBase(pos, amount, hide)
     local result = {}
 
     if amount == DAMAGE_ZERO or amount == 0 then
@@ -69,15 +70,15 @@ end
 
 
 -- Is there a less ugly way? cps everything? use coroutines?
-function SafeDamage(pos, amount, hide, ret)
-    for _, d in ipairs(SafeBase(pos, amount, hide)) do
+function mod.SafeDamage(pos, amount, hide, ret)
+    for _, d in ipairs(mod.SafeBase(pos, amount, hide)) do
         ret:AddDamage(d)
     end
 end
-function QueuedSafeDamage(pos, amount, ret)
-    ret:AddQueuedScript("DamagePawnAt("..pos:GetString()..","..amount..")")
+function mod.QueuedSafeDamage(pos, amount, ret)
+    ret:AddQueuedScript("Kinematics.DamagePawnAt("..pos:GetString()..","..amount..")")
 end
-function DamagePawnAt(pos, amount)
+function Kinematics.DamagePawnAt(pos, amount)
     local pawn = Board:GetPawn(pos)
     if pawn then
         local oldHealth = pawn:GetHealth()
@@ -101,10 +102,11 @@ end
 
 -- yield all weapons of all player mechs
 -- ignores movement (idx 0) and repair (idx 50)
-function ActiveWeapons()
+function mod.ActiveWeapons()
     local co = coroutine.create(ActiveWeapons_co)
     return function()
         local code, res = coroutine.resume(co)
         return res
     end
 end
+return mod
