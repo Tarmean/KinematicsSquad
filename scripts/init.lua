@@ -59,6 +59,7 @@ local function load(self, options, version)
     end)
 
     Kinematics.RegisterScoreListOverride(Kinematics_PawnShield.OverwriteTargetScore)
+    local isMovingSpawn
 end
 
 

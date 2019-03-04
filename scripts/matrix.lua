@@ -5,7 +5,10 @@ local Simulation = {
     DROPPED = 3,
     VALID = 4,
     OOB = 5,
-    GUARDING = 6
+    GUARDING = 6,
+    -- This is for the extra space of trains and dams
+    -- for now we treat ExtraSpaces as terrain
+    TERRAIN_EXTRA_SPACE = 902
 }
 
 local ProxyPawn = {}
@@ -38,7 +41,12 @@ function Simulation:_AddPawnFromIdent(identifier)
 end
 function Simulation:TerrainAt(position)
     if not self.sim_terrain[position] then
-        self.sim_terrain[position] = Board:GetTerrain(position)
+        local pawn_at_space = Board:GetPawn(position)
+        if pawn_at_space and pawn_at_space:GetSpace() ~= position then
+            self.sim_terrain[position] = Simulation.TERRAIN_EXTRA_SPACE
+        else
+            self.sim_terrain[position] = Board:GetTerrain(position)
+        end
     end
     return self.sim_terrain[position]
 end
@@ -57,6 +65,62 @@ function Simulation:PawnWithId(pawn_id)
         end
     end
     return self:_AddPawnFromIdent(pawn_id)
+end
+local PATH_LEAPER = 6
+local INVALID_TERRAINS =
+    { [PATH_FLYER] = -- 1
+        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
+        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
+        , [Simulation.TERRAIN_EXTRA_SPACE] = Simulation.TERR_COLLISION
+        }
+    , [PATH_GROUND] = -- 0
+        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
+        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
+        , [TERRAIN_ACID] = Simulation.DROPPED
+        , [TERRAIN_HOLE] = Simulation.DROPPED
+        , [TERRAIN_LAVA] = Simulation.DROPPED
+        , [TERRAIN_WATER] = Simulation.DROPPED
+        , [Simulation.TERRAIN_EXTRA_SPACE] = Simulation.TERR_COLLISION
+        }
+    , [PATH_LEAPER] = -- 6
+        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
+        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
+        , [TERRAIN_ACID] = Simulation.DROPPED
+        , [TERRAIN_HOLE] = Simulation.DROPPED
+        , [TERRAIN_LAVA] = Simulation.DROPPED
+        , [TERRAIN_WATER] = Simulation.DROPPED
+        , [Simulation.TERRAIN_EXTRA_SPACE] = Simulation.TERR_COLLISION
+        }
+    , [PATH_MASSIVE] = -- 2
+        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
+        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
+        , [TERRAIN_HOLE]     = Simulation.TERR_COLLISION
+        , [Simulation.TERRAIN_EXTRA_SPACE] = Simulation.TERR_COLLISION
+        }
+    , [PATH_PHASING] = {} -- 9
+    , [PATH_PROJECTILE] = -- 3
+        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
+        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
+        , [Simulation.TERRAIN_EXTRA_SPACE] = Simulation.TERR_COLLISION
+        }
+    , [PATH_ROADRUNNER] = -- 4
+        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
+        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
+        , [TERRAIN_HOLE] = Simulation.TERR_COLLISION
+        , [Simulation.TERRAIN_EXTRA_SPACE] = Simulation.TERR_COLLISION
+        }
+    }
+
+local reverse_check = { [4] = "valid", [3] = "dropped", [5] = "oob", [1] = "unit collision", [2] = "terrain collision", [6] = "guarding" }
+function Simulation:CheckSpaceFree(pos, pathprof)
+    if self:PawnAt(pos) then
+        return Simulation.UNIT_COLLISION
+    end
+    local terr_type = self:TerrainAt(pos)
+    local terr_map = INVALID_TERRAINS[pathprof]
+    local invalid_result = terr_map and terr_map[terr_type]
+    local result =  invalid_result or Simulation.VALID
+    return result
 end
 
 function ProxyPawn:new (pawn, simulation, o)
@@ -149,55 +213,6 @@ function ProxyPawn:GetPathProf()
     end
     return self.pathprof
 end
-local PATH_LEAPER = 6
-local INVALID_TERRAINS =
-    { [PATH_FLYER] = -- 1
-        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
-        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
-        }
-    , [PATH_GROUND] = -- 0
-        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
-        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
-        , [TERRAIN_ACID] = Simulation.DROPPED
-        , [TERRAIN_HOLE] = Simulation.DROPPED
-        , [TERRAIN_LAVA] = Simulation.DROPPED
-        , [TERRAIN_WATER] = Simulation.DROPPED
-        }
-    , [PATH_LEAPER] = -- 6
-        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
-        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
-        , [TERRAIN_ACID] = Simulation.DROPPED
-        , [TERRAIN_HOLE] = Simulation.DROPPED
-        , [TERRAIN_LAVA] = Simulation.DROPPED
-        , [TERRAIN_WATER] = Simulation.DROPPED
-        }
-    , [PATH_MASSIVE] = -- 2
-        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
-        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
-        , [TERRAIN_HOLE]     = Simulation.TERR_COLLISION
-        }
-    , [PATH_PHASING] = {} -- 9
-    , [PATH_PROJECTILE] = -- 3
-        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
-        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
-        }
-    , [PATH_ROADRUNNER] = -- 4
-        { [TERRAIN_BUILDING] = Simulation.TERR_COLLISION
-        , [TERRAIN_MOUNTAIN] = Simulation.TERR_COLLISION
-        , [TERRAIN_HOLE] = Simulation.TERR_COLLISION
-        }
-    }
-
-function ProxyPawn:CheckSpaceFree(pos)
-    if self.simulation:PawnAt(pos) then
-        return Simulation.UNIT_COLLISION
-    end
-    local terr_type = self.simulation:TerrainAt(pos)
-    local terr_map = INVALID_TERRAINS[self:GetPathProf()]
-    local invalid_result = terr_map and terr_map[terr_type]
-    local result =  invalid_result or Simulation.VALID
-    return result
-end
 function ProxyPawn:GetOriginalSpace()
     return self.orig_space or self:GetSpace()
 end
@@ -207,7 +222,7 @@ function ProxyPawn:SetSpace(pos)
     if not (Board:IsValid(pos)) then
         return Simulation.OOB
     end
-    local result = self:CheckSpaceFree(pos)
+    local result = self.simulation:CheckSpaceFree(pos, self:GetPathProf())
     if result == Simulation.DROPPED then
         self.space = pos
         self.is_dropped = true

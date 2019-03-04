@@ -152,6 +152,18 @@ function Kinematics_Prime_LaunchWeapon.Post(state)
     Kinematics_Prime_LaunchWeapon.PostEffect(eff, state)
     Board:AddEffect(eff)
 end
+local function pawn_shield_should_trigger(state, pawn)
+   if state.FriendlyDamage then
+       return false
+   end
+   if not pawn or not (pawn:GetTeam() == TEAM_PLAYER) then
+       return false
+   end
+   if modApi:stringStartsWith(pawn:GetType(), "Kinematics_PawnShield_A") then
+       return false
+   end
+   return true
+end
 function Kinematics_Prime_LaunchWeapon.PostEffect(eff, state)--{{{
     eff.piOrigin = Point(-10-state.Space.y,-10-state.Space.x)
     eff:AddSound("/props/satellite_launch")
@@ -171,7 +183,7 @@ function Kinematics_Prime_LaunchWeapon.PostEffect(eff, state)--{{{
     local impact_damage = SpaceDamage(state.Space, 2)
     if Board:IsBlocked(state.Space, PathProf) then
         local pawn = Board:GetPawn(state.Space)
-        if not state.FriendlyDamage and pawn and pawn:GetTeam() == TEAM_PLAYER then
+        if pawn_shield_should_trigger(state, pawn) then
             eff:AddScript("Board:AddAlert("..state.Space:GetString()..", \"ALERT_COLLISION_SHIELDED\")")
             eff:AddScript("Board:GetPawn("..state.Id.."):Kill(true)")
         elseif pawn and pawn:IsShield() then
