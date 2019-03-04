@@ -164,7 +164,9 @@ function Kinematics_Prime_LaunchWeapon.PostEffect(eff, state)--{{{
         if not state.FriendlyDamage and pawn and pawn:GetTeam() == TEAM_PLAYER then
             eff:AddScript("Board:AddAlert("..state.Space:GetString()..", \"ALERT_COLLISION_SHIELDED\")")
             eff:AddScript("test.SetHealth(Board:GetPawn("..state.Id.."), 0)")
-
+        elseif pawn and pawn:IsShield() then
+            eff:AddScript("Board:AddAlert("..state.Space:GetString()..", \"ALERT_COLLISION\")")
+            eff:AddScript("test.SetHealth(Board:GetPawn("..state.Id.."), 0)")
         else
             eff:AddScript("Board:AddAlert("..state.Space:GetString()..", \"ALERT_COLLISION\")")
             impact_damage.iDamage = DAMAGE_DEATH

@@ -24,6 +24,9 @@ Kinematics_Prime_PushWeapon = Skill:new{
 }
 
 local function RecursivePush(pawn, dir, sim)
+    if pawn:IsGuarding() then
+        return false
+    end
     local pos = pawn:GetSpace()
     local new_pos = pos + dir
     local move_typ = pawn:SetSpace(new_pos)
