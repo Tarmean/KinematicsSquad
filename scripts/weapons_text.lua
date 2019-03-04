@@ -13,7 +13,7 @@ local weaponTexts = {
     Kinematics_Prime_LaunchWeapon_Description = "Launch a unit, dealing 2 Damage. If it lands on something both things die.",
     Kinematics_Prime_LaunchWeapon_Upgrade1 = "Ion Emitter",
     Kinematics_Prime_LaunchWeapon_Upgrade2 = "Impact Shielding",
-    Kinematics_Prime_LaunchWeapon_A_UpgradeDescription = "Shield a single tile backwards.",
+    Kinematics_Prime_LaunchWeapon_A_UpgradeDescription = "Shield three tiles backwards.",
     Kinematics_Prime_LaunchWeapon_B_UpgradeDescription = "Friendly units are shielded before something lands on them.",
 
     Kinematics_Shield_Passive_Name = "Quantum Stabilizer",
