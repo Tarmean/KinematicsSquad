@@ -225,7 +225,7 @@ function Kinematics_Prime_LaunchWeapon.ShieldPositions(p1, p2)
     local dir_vec = DIR_VECTORS[back_dir]
     local shieldpos = p1 + dir_vec
 
-    local shields = { {{Space = shieldpos + dir_vec + dir_vec, Dir = back_dir}}, {{Space = shieldpos + dir_vec, Dir = back_dir}}, {{Space = shieldpos, Dir = back_dir}}}
+    local shields = {{ {Space = shieldpos + dir_vec + dir_vec, Dir = back_dir}, {Space = shieldpos + dir_vec, Dir = back_dir}, {Space = shieldpos, Dir = back_dir}}}
     return shields
 end
 function Kinematics_Prime_LaunchWeapon_Tooltip.Shield(id)
