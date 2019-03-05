@@ -287,7 +287,7 @@ function Kinematics_Prime_LaunchWeapon_Tooltip:GetTargetArea()--{{{
 end--}}}
 function Kinematics_Prime_LaunchWeapon.FriendlyFireUpgrade(state, eff)
     local pawn = Board:GetPawn(state.Space)
-    if not state.FriendlyDamage and pawn and (pawn:GetTeam() == TEAM_PLAYER) then
+    if pawn_shield_should_trigger(state, pawn) then
         local dmg = SpaceDamage(state.Space, DAMAGE_ZERO)
         dmg.iShield = EFFECT_CREATE
         eff:AddDamage(dmg)
