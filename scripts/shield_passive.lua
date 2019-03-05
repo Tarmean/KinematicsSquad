@@ -84,7 +84,9 @@ function Kinematics_Shield_Passive.SpawnShields(tiles, ret, shield)
             if (t.Dir ~= DIR_NONE) then 
                 damage.sAnimation = "airpush_"..t.Dir
             end
-            ret:AddDamage(damage)
+            if Board:IsValid(t.Space) then 
+                ret:AddDamage(damage)
+            end
         end
     end
 
@@ -97,10 +99,10 @@ function Kinematics_Shield_Passive.SpawnShields(tiles, ret, shield)
             local action
             if sim:CheckSpaceFree(t.Space, PATH_GROUND) == Simulation.VALID then
                 action = "SPAWN"
+            elseif pawn_at_loc and pawn_at_loc:GetType() == shield then
+                action = "HEAL"
             elseif not pawn_at_loc or (pawn_at_loc:IsGuarding() and pawn_at_loc:IsPlayer()) then
                 action = "SHIELD"
-            elseif pawn_at_loc:GetType() == shield then
-                action = "HEAL"
             else
                 action = "NONE"
             end
@@ -116,8 +118,10 @@ function Kinematics_Shield_Passive.SpawnShields(tiles, ret, shield)
                     damage.sImageMark = "combat/shield_front.png"
                 end
             end
-            ret:AddDamage(damage)
-            Kinematics_Shield_Passive.DoShield(t.Space, ret, shield, action)
+            if Board:IsValid(t.Space) then 
+                ret:AddDamage(damage)
+                Kinematics_Shield_Passive.DoShield(t.Space, ret, shield, action)
+            end
         end
         ret:AddDelay(none_shielded and NO_DELAY or FULL_DELAY)
     end
@@ -126,6 +130,7 @@ end
 function Kinematics_Shield_Passive.DoShield(p, ret, shield, action)
     local damage = SpaceDamage(p)
     damage.sScript = "Kinematics_Shield_Passive.DoSpawn("..p:GetString() .. ",\""..shield.."\",\"" .. action .."\")"
+    LOG(damage.sScript)
     damage.sSound = "/props/shield_activated"
     ret:AddDamage(damage)
     ret:AddBounce(p, -3)
