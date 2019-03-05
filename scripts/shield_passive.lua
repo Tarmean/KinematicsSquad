@@ -130,7 +130,6 @@ end
 function Kinematics_Shield_Passive.DoShield(p, ret, shield, action)
     local damage = SpaceDamage(p)
     damage.sScript = "Kinematics_Shield_Passive.DoSpawn("..p:GetString() .. ",\""..shield.."\",\"" .. action .."\")"
-    LOG(damage.sScript)
     damage.sSound = "/props/shield_activated"
     ret:AddDamage(damage)
     ret:AddBounce(p, -3)
