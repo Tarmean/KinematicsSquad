@@ -82,7 +82,11 @@ function Kinematics.DamagePawnAt(pos, amount)
     local pawn = Board:GetPawn(pos)
     if pawn then
         local oldHealth = pawn:GetHealth()
-        test.SetHealth(pawn, oldHealth - amount)
+        if not pawn:IsShield() and not pawn:IsFrozen() and oldHealth <= amount then
+            pawn:Kill(true)
+        else
+            test.SetHealth(pawn, oldHealth - amount)
+        end
     end
 end
 
