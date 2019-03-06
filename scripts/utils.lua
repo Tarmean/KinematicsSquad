@@ -45,6 +45,11 @@ function mod.SafeBase(pos, amount, hide)
         dam.iTerrain = Board:GetTerrain(pos)
         result = {dam}
     end
+    if not damaged and  DamageableTerrain[terrain] then
+        local set_road = SpaceDamage(pos)
+        set_road.iTerrain = TERRAIN_ROAD
+        result[#result+1] = set_road
+    end
 
     local dam = SpaceDamage(pos, amount)
     if hide then
