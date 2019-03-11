@@ -39,7 +39,7 @@ function Kinematics_Prime_ShieldWeapon:GetSkillEffect(p1, p2)
     for i = 1, self.WallSize do
         tiles[#tiles+1] = {{Space = p2 + lv * i, Dir = dir}, { Space =  p2 - lv * i, Dir = dir}}
     end
-    Kinematics_Shield_Passive.Activate(tiles,ret, dir)
+    Kinematics_Shield_Passive.Activate(tiles,ret, p1)
 
     return ret
 end

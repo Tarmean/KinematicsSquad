@@ -50,6 +50,12 @@ function Simulation:TerrainAt(position)
     end
     return self.sim_terrain[position]
 end
+function Simulation:AddPawn(ident, space)
+    local p = PAWN_FACTORY:CreatePawn(ident)
+    local new_pawn = ProxyPawn:new(p, self, {space = space})
+    self.sim_pawns[#self.sim_pawns+1] = new_pawn
+    return new_pawn
+end
 function Simulation:PawnAt(position)
     for _, v in ipairs(self.sim_pawns) do
         if v:IsAlive() and v:GetSpace() == position then
@@ -215,6 +221,12 @@ function ProxyPawn:GetPathProf()
 end
 function ProxyPawn:GetOriginalSpace()
     return self.orig_space or self:GetSpace()
+end
+function ProxyPawn:GetTeam()
+    if not self.team then
+        self.team = self.pawn:GetTeam()
+    end
+    return self.team
 end
 function ProxyPawn:SetSpace(pos)
     -- make sure to call GetSpace before setting it

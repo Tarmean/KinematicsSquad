@@ -22,7 +22,7 @@ function Science_Shield:GetSkillEffect(p1, p2)
         tiles[#tiles+1] = {Space = p2, Dir = (direction+2%4)}
         full_tiles = {tiles}
     end
-    Kinematics_Shield_Passive.Activate(full_tiles, ret)
+    Kinematics_Shield_Passive.Activate(full_tiles, ret, p1)
 	
 	if self.SelfShield == 1 then
 		damage.loc = p1
@@ -55,7 +55,7 @@ function Science_LocalShield:GetSkillEffect(p1, p2)
         end
     end
 	local ret = SkillEffect()
-    Kinematics_Shield_Passive.Activate(points, ret)
+    Kinematics_Shield_Passive.Activate(points, ret, p1)
 	return ret
 end	
 
@@ -65,7 +65,7 @@ function Deploy_ShieldTankShot:GetSkillEffect(p1, p2)
 	
 	local damage = SpaceDamage(p2,0)
 	ret:AddMelee(p1,damage)
-    Kinematics_Shield_Passive.Activate({{{Space=p2, Dir=direction}}}, ret)
+    Kinematics_Shield_Passive.Activate({{{Space=p2, Dir=direction}}}, ret, p1)
 	
 	return ret
 end	
@@ -79,7 +79,7 @@ function Deploy_ShieldTankShot2:GetSkillEffect(p1,p2)
 	local damage = SpaceDamage(p2,self.Damage)
 	ret:AddProjectile(damage, self.ProjectileArt, NO_DELAY)
     ret:AddDelay(FULL_DELAY)
-    Kinematics_Shield_Passive.Activate({{{Space=target, Dir=direction}}}, ret)
+    Kinematics_Shield_Passive.Activate({{{Space=target, Dir=direction}}}, ret, p1)
 	
 	return ret
 end

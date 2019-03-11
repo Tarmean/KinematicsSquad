@@ -1,6 +1,7 @@
--- local inspect = require("inspect")
+local Attack = Kinematics:require("curattack_tracker")
 local PendingEvents = { }
-local CurrentAttack = nil
+local PreMarked = {}
+local apply_environment_effect_buffer = false
 
 local function PushLocal(env)--{{{{{{
     if not env.Injected then
@@ -19,6 +20,7 @@ local function ApplyEffect(env)--{{{
     PushLocal(env)
     if IsEffect(env) then
         CurrentAttack = env.Injected[1]
+        PreMarked[CurrentAttack.Space:GetString()] = nil
         table.remove(env.Injected,1)
         Kinematics_Prime_LaunchWeapon.Post(CurrentAttack)
         return IsEffect(env)
@@ -33,18 +35,38 @@ local function MarkBoard(env)--{{{
     end
         
     for _,v in ipairs(env.Injected) do
+
         Board:MarkSpaceDesc(v.Space,v.Desc)
         if CurrentAttack == v then
             Board:MarkSpaceImage(v.Space,v.CombatIcon, GL_Color(255,150,150,0.75))
         else
             Board:MarkSpaceImage(v.Space,v.CombatIcon, GL_Color(255,226,88,0.75))
         end
+
+        local p = Attack:PawnAt(v.Space)
+        local should_preview = not Kinematics_Prime_LaunchWeapon.pawn_shield_should_preview(v, p)
+        if should_preview then
+            Board:MarkSpaceDamage(SpaceDamage(v.Space, DAMAGE_DEATH))
+            PreMarked[v.Space:GetString()] = true
+        end
     end
 end--}}}
 
 local appenv_base = Mission.ApplyEnvironmentEffect--{{{
 function Mission:ApplyEnvironmentEffect()
-    return ApplyEffect(self.LiveEnvironment) or appenv_base(self)
+    if apply_environment_effect_buffer then
+        apply_environment_effect_buffer = false
+        return ApplyEffect(self.LiveEnvironment)
+    end
+
+    local built_in = appenv_base(self)
+    if built_in then
+        return true
+    elseif IsEffect(self.LiveEnvironment) then
+        apply_environment_effect_buffer = true
+        return true
+    end
+    return false
 end--}}}
 
 local isenv_base = Mission.IsEnvironmentEffect--{{{
@@ -58,12 +80,12 @@ function Mission:BaseUpdate()
     MarkBoard(self.LiveEnvironment)
 end--}}}
 
--- local planenv_base = Mission.PlanEnvironment{{{
 function ResetUppercut(env)
-    -- planenv_base(self)
     if env then
         env.Injected = {}
     end
+    apply_environment_effect_buffer = false
+    PreMarked = {}
     PendingEvents = {}
 end--}}}
 

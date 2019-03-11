@@ -1,4 +1,5 @@
 -- local inspect = require("inspect")
+local Attack = Kinematics:require("curattack_tracker")
 local utils = Kinematics:require("utils")
 local Simulation = Kinematics:require("matrix")
 Kinematics_Shield_Passive = Skill:new {
@@ -41,11 +42,11 @@ local function PassiveType()
     end
     return nil
 end
-function Kinematics_Shield_Passive.Activate(tiles, ret)
+function Kinematics_Shield_Passive.Activate(tiles, ret, source)
     local kind = PassiveType()
 
     if kind then
-        Kinematics_Shield_Passive.SpawnShields(tiles, ret, kind)
+        Kinematics_Shield_Passive.SpawnShields(tiles, ret, kind, source)
     else
         Kinematics_Shield_Passive.ApplyShields(tiles, ret)
     end
@@ -65,7 +66,7 @@ end
 local hash_point = function (point)
     return point.x + 128 * point.y
 end
-function Kinematics_Shield_Passive.SpawnShields(tiles, ret, shield)
+function Kinematics_Shield_Passive.SpawnShields(tiles, ret, shield, source)
     local affected_tiles = {}
     local sim = Simulation:new()
     for _, s in ipairs(tiles) do
@@ -94,6 +95,7 @@ function Kinematics_Shield_Passive.SpawnShields(tiles, ret, shield)
         end
     end
 
+
     ret:AddDelay(FULL_DELAY)
     for _, s in ipairs(tiles) do
         local none_shielded = true
@@ -102,6 +104,7 @@ function Kinematics_Shield_Passive.SpawnShields(tiles, ret, shield)
 
             local action
             if sim:CheckSpaceFree(t.Space, PATH_GROUND) == Simulation.VALID then
+                sim:AddPawn(shield, t.Space)
                 action = "SPAWN"
             elseif pawn_at_loc and pawn_at_loc:GetType() == shield then
                 action = "HEAL"
@@ -128,6 +131,9 @@ function Kinematics_Shield_Passive.SpawnShields(tiles, ret, shield)
             end
         end
         ret:AddDelay(none_shielded and NO_DELAY or FULL_DELAY)
+    end
+    if source and Board:GetPawn(source) then
+        Attack:SetSim(source, sim)
     end
 end
 

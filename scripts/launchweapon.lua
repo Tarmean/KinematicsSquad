@@ -85,8 +85,9 @@ function Kinematics_Prime_LaunchWeapon:GetTargetArea(point)--{{{
 end--}}}}}}
 
 function Kinematics_Prime_LaunchWeapon.AddShield(p1, p2, result)
+    local source = Board:GetPawn(p1)
     local shields = Kinematics_Prime_LaunchWeapon.ShieldPositions(p1, p2)
-    Kinematics_Shield_Passive.Activate(shields, result)
+    Kinematics_Shield_Passive.Activate(shields, result, p1)
 end
 
 function Kinematics_Prime_LaunchWeapon.HideUnit(id)--{{{
@@ -152,10 +153,10 @@ function Kinematics_Prime_LaunchWeapon.Post(state)
     Kinematics_Prime_LaunchWeapon.PostEffect(eff, state)
     Board:AddEffect(eff)
 end
-local function pawn_is_shielded(pawn)
+function Kinematics_Prime_LaunchWeapon.pawn_is_shielded(pawn)
     return pawn and (pawn:GetTeam() == TEAM_PLAYER) and pawn:IsShield()
 end
-local function pawn_shield_should_trigger(state, pawn)
+function Kinematics_Prime_LaunchWeapon.pawn_shield_should_trigger(state, pawn)
    if state.FriendlyDamage then
        return false
    end
@@ -166,6 +167,16 @@ local function pawn_shield_should_trigger(state, pawn)
        return false
    end
    return true
+end
+function Kinematics_Prime_LaunchWeapon.pawn_shield_should_preview(state, pawn)
+
+    if Kinematics_Prime_LaunchWeapon.pawn_shield_should_trigger(state, pawn) then
+        return true
+    elseif pawn and modApi:stringStartsWith(pawn:GetType(), "Kinematics_PawnShield") then
+        return true
+    end
+    return false
+
 end
 function Kinematics_Prime_LaunchWeapon.PostEffect(eff, state)--{{{
     eff.piOrigin = Point(-10-state.Space.y,-10-state.Space.x)
@@ -182,14 +193,13 @@ function Kinematics_Prime_LaunchWeapon.PostEffect(eff, state)--{{{
     eff:AddBoardShake(1)
     local script = "Kinematics_Prime_LaunchWeapon.RestoreUnit("..save_table(state)..")"
     eff:AddScript(script)
-    local PathProf = Board:GetPawn(state.Id):GetPathProf()
     local impact_damage = SpaceDamage(state.Space, 2)
-    if Board:IsBlocked(state.Space, PathProf) then
-        local pawn = Board:GetPawn(state.Space)
-        if pawn_shield_should_trigger(state, pawn) then
+    local pawn = Board:GetPawn(state.Space)
+    if Board:IsBlocked(state.Space, pawn:GetPathProf()) then
+        if Kinematics_Prime_LaunchWeapon.pawn_shield_should_trigger(state, pawn) then
             eff:AddScript("Board:AddAlert("..state.Space:GetString()..", \"ALERT_COLLISION_SHIELDED\")")
             eff:AddScript("Board:GetPawn("..state.Id.."):Kill(true)")
-        elseif pawn_is_shielded(pawn) then
+        elseif Kinematics_Prime_LaunchWeapon.pawn_is_shielded(pawn) then
             eff:AddScript("Board:AddAlert("..state.Space:GetString()..", \"ALERT_COLLISION\")")
             eff:AddScript("Board:GetPawn("..state.Id.."):Kill(true)")
         else
@@ -263,7 +273,7 @@ function Kinematics_Prime_LaunchWeapon_Tooltip.Shield(id)
     local eff = SkillEffect()
 
     local shields = Kinematics_Prime_LaunchWeapon.ShieldPositions(p1, p2)
-    Kinematics_Shield_Passive.SpawnShields(shields, eff, "Kinematics_PawnShield")
+    Kinematics_Shield_Passive.Activate(shields, eff)
 
     eff:AddScript("Kinematics_Prime_LaunchWeapon_Tooltip.Land("..id..")")
     Board:AddEffect(eff)
@@ -290,7 +300,7 @@ function Kinematics_Prime_LaunchWeapon_Tooltip:GetTargetArea()--{{{
 end--}}}
 function Kinematics_Prime_LaunchWeapon.FriendlyFireUpgrade(state, eff)
     local pawn = Board:GetPawn(state.Space)
-    if pawn_shield_should_trigger(state, pawn) then
+    if Kinematics_Prime_LaunchWeapon.pawn_shield_should_trigger(state, pawn) then
         local dmg = SpaceDamage(state.Space, DAMAGE_ZERO)
         dmg.iShield = EFFECT_CREATE
         eff:AddDamage(dmg)

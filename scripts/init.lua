@@ -45,7 +45,8 @@ local function init(self)
         "launchweapon",
         "launchweapon_hooks",
         "pawns",
-        "scorelist_overwrite"
+        "scorelist_overwrite",
+        "move_override"
     }
 
 end

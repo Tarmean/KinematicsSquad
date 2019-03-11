@@ -1,5 +1,6 @@
 local utils = Kinematics:require("utils")
 local Simulation = Kinematics:require("matrix")
+local Attack = Kinematics:require("curattack_tracker")
 Kinematics_Prime_PushWeapon = Skill:new{  
     Class = "Science",
     Name = "Push",
@@ -41,7 +42,7 @@ local function BasePush(pos, dir)
     local sim = Simulation:new()
     local p = sim:PawnAt(pos)
     while RecursivePush(p, dir, sim) do end
-    return sim.sim_pawns
+    return sim
 end
  
 function Kinematics_Prime_PushWeapon:GetSkillEffect(p1, p2)
@@ -49,7 +50,9 @@ function Kinematics_Prime_PushWeapon:GetSkillEffect(p1, p2)
     local dir = GetDirection(p2 - p1)
     local dirv = DIR_VECTORS[dir]
 
-    local final_state = BasePush(p1, dirv)
+    local sim = BasePush(p1, dirv)
+    Attack:SetSim(p1, sim)
+    local final_state = sim.sim_pawns
 
     for i = #final_state, 1, -1 do
         ret:AddDelay(FULL_DELAY)
