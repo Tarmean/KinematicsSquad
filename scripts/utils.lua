@@ -12,14 +12,6 @@
 -- TERRAIN_WATER    3
 
 local mod = {}
-function mod.Pawns()
-    local pawns = extract_table(Board:GetPawns(TEAM_ANY))
-    for _, id in ipairs(pawns) do
-        local pawn = Board:GetPawn(id)
-        local output = string.format("%s: %x", pawn:GetSpace():GetString(), test.GetPawnAddr(pawn))
-        LOG(output)
-    end
-end
 local DamageableTerrain = {[TERRAIN_ICE] = true, [TERRAIN_MOUNTAIN] = true, [TERRAIN_SAND] = true, [TERRAIN_FOREST]=true}
 function mod.SafeBase(pos, amount, hide)
     local result = {}
@@ -84,40 +76,9 @@ function mod.QueuedSafeDamage(pos, amount, ret)
     ret:AddQueuedScript("Kinematics.DamagePawnAt("..pos:GetString()..","..amount..")")
 end
 function Kinematics.DamagePawnAt(pos, amount)
-    local pawn = Board:GetPawn(pos)
-    if pawn then
-        local oldHealth = pawn:GetHealth()
-        if not pawn:IsShield() and not pawn:IsFrozen() and oldHealth <= amount then
-            pawn:Kill(true)
-        else
-            test.SetHealth(pawn, oldHealth - amount)
-        end
-    end
+    local eff = SkillEffect()
+    mod.SafeDamage(pos, amount, true, eff)
+    Board:AddEffect(eff)
 end
 
-local function ActiveWeapons_co()
-    local ids = extract_table(Board:GetPawns(TEAM_PLAYER))
-    for _, id in ipairs(ids) do
-        if Board:IsPawnAlive(id) then
-            local pawn = Board:GetPawn(id)
-            local idx = 1
-            local next_weapon = test.GetWeaponName(pawn, idx)
-            while next_weapon do
-                coroutine.yield(next_weapon)
-                idx = idx + 1
-                next_weapon = test.GetWeaponName(pawn, idx)
-            end
-        end
-    end
-end
-
--- yield all weapons of all player mechs
--- ignores movement (idx 0) and repair (idx 50)
-function mod.ActiveWeapons()
-    local co = coroutine.create(ActiveWeapons_co)
-    return function()
-        local code, res = coroutine.resume(co)
-        return res
-    end
-end
 return mod

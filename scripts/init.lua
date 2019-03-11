@@ -35,8 +35,6 @@ local function init(self)
     modApi:appendAsset("img/units/player/mech_kinematics_push_broken_w.png",self.resourcePath.."img/pushmech_broken_w.png")
     modApi:appendAsset("img/units/player/mech_kinematics_push_broken.png",self.resourcePath.."img/pushmech_broken.png")
     modApi:appendAsset("img/weapons/kinematics_shield_stabilizer.png",self.resourcePath.."img/shield_stabilizer.png")
-    -- package.cpath = self.resourcePath .. 'lib/?.dll;' .. package.cpath
-    local f = assert(package.loadlib(self.resourcePath.. "/lib/utils.dll", "luaopen_utils"))()
     RequireAll(self){
         "animations",
         "emitters",

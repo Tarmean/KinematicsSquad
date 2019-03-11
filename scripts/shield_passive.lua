@@ -3,16 +3,22 @@ local utils = Kinematics:require("utils")
 local Simulation = Kinematics:require("matrix")
 Kinematics_Shield_Passive = Skill:new {
     Name = "Shield Stabilizer",
-    Passive = "Flame_Immune",
+    Passive = "Kinematics_Shield_Passive",
     Icon = "weapons/kinematics_shield_stabilizer.png",
     PowerCost = 1,
     Upgrades = 2,
     UpgradeCost = {2, 3},
     CustomTipImage = "Kinematics_Shield_Passive_Tooltip",
 }
-Kinematics_Shield_Passive_A = Kinematics_Shield_Passive:new {}
-Kinematics_Shield_Passive_B = Kinematics_Shield_Passive:new {}
-Kinematics_Shield_Passive_AB = Kinematics_Shield_Passive:new {}
+Kinematics_Shield_Passive_A = Kinematics_Shield_Passive:new {
+    Passive = "Kinematics_Shield_Passive_A"
+}
+Kinematics_Shield_Passive_B = Kinematics_Shield_Passive:new {
+    Passive = "Kinematics_Shield_Passive_B"
+}
+Kinematics_Shield_Passive_AB = Kinematics_Shield_Passive:new {
+    Passive = "Kinematics_Shield_Passive_AB"
+}
 Kinematics_Shield_Passive_Tooltip = Skill:new {
     TipImage = {
         Unit = Point(2,3),
@@ -24,16 +30,14 @@ Kinematics_Shield_Passive_Tooltip = Skill:new {
 
 
 local function PassiveType()
-    for s in utils.ActiveWeapons() do
-        if s == "Kinematics_Shield_Passive" then
-            return "Kinematics_PawnShield"
-        elseif s == "Kinematics_Shield_Passive_A" then
-            return "Kinematics_PawnShield_A"
-        elseif s == "Kinematics_Shield_Passive_B" then
-            return "Kinematics_PawnShield_B"
-        elseif s == "Kinematics_Shield_Passive_AB" then
-            return "Kinematics_PawnShield_AB"
-        end
+    if IsPassiveSkill("Kinematics_Shield_Passive_AB") then
+        return "Kinematics_PawnShield_AB"
+    elseif IsPassiveSkill("Kinematics_Shield_Passive_A") then
+        return "Kinematics_PawnShield_A"
+    elseif IsPassiveSkill("Kinematics_Shield_Passive_B") then
+        return "Kinematics_PawnShield_B"
+    elseif IsPassiveSkill("Kinematics_Shield_Passive") then
+        return "Kinematics_PawnShield"
     end
     return nil
 end
