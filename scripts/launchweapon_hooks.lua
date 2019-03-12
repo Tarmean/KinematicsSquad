@@ -55,8 +55,9 @@ end--}}}
 local appenv_base = Mission.ApplyEnvironmentEffect--{{{
 function Mission:ApplyEnvironmentEffect()
     if apply_environment_effect_buffer then
-        apply_environment_effect_buffer = false
-        return ApplyEffect(self.LiveEnvironment)
+        local result = ApplyEffect(self.LiveEnvironment)
+        apply_environment_effect_buffer = result
+        return result
     end
 
     local built_in = appenv_base(self)

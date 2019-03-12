@@ -194,7 +194,7 @@ function Kinematics_Prime_LaunchWeapon.PostEffect(eff, state)--{{{
     local script = "Kinematics_Prime_LaunchWeapon.RestoreUnit("..save_table(state)..")"
     eff:AddScript(script)
     local impact_damage = SpaceDamage(state.Space, 2)
-    local pawn = Board:GetPawn(state.Space)
+    local pawn = Board:GetPawn(state.Id)
     if Board:IsBlocked(state.Space, pawn:GetPathProf()) then
         if Kinematics_Prime_LaunchWeapon.pawn_shield_should_trigger(state, pawn) then
             eff:AddScript("Board:AddAlert("..state.Space:GetString()..", \"ALERT_COLLISION_SHIELDED\")")
