@@ -36,17 +36,17 @@ local function init(self)
     modApi:appendAsset("img/units/player/mech_kinematics_push_broken.png",self.resourcePath.."img/pushmech_broken.png")
     modApi:appendAsset("img/weapons/kinematics_shield_stabilizer.png",self.resourcePath.."img/shield_stabilizer.png")
     RequireAll(self){
+        "shield_overrides",
         "animations",
         "emitters",
-        "shield_passive",
-        "shield_overrides",
         "pushweapon",
         "shieldweapon",
         "launchweapon",
+        "shield_passive",
         "launchweapon_hooks",
         "pawns",
-        "scorelist_overwrite",
-        "move_override"
+        "scorelist_overwrite"
+        -- , "dev"
     }
 
 end

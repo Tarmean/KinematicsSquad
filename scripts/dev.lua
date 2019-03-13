@@ -7,7 +7,6 @@ function LOGS(s)
         table.insert(buffered_output, match);
     end
     buffered_offset = 0
-    lnext()
 end
 function lnext()
     local out = ""
@@ -23,3 +22,5 @@ function lrestart()
 end
 utils = Kinematics:require("utils")
 attack = Kinematics:require("curattack_tracker")
+Simulation = Kinematics:require("matrix")
+inspect = require("inspect")

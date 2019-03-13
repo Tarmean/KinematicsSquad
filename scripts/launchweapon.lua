@@ -59,13 +59,10 @@ Kinematics_Prime_LaunchWeapon_Tooltip_AB = Kinematics_Prime_LaunchWeapon_Tooltip
 
 function Kinematics_Prime_LaunchWeapon:GetSkillEffect(p1, p2)--{{{{{{
     local result = Kinematics_Prime_LaunchWeapon.Punch(p1, p2)
-
-
     local pawn = Board:GetPawn(p2)
     if pawn and not pawn:IsGuarding() then
         local state = Kinematics_Prime_LaunchWeapon.MkState(p2,self.FriendlyDamage, pawn:GetId())
         result:AddScript("Kinematics_Prime_LaunchWeapon.Pre(" .. p1:GetString() .. ", " .. save_table(state) ..  ")")
-
         result:AddDelay(1)
         utils.SafeDamage(p2, 2, false, result)
     else
@@ -194,8 +191,9 @@ function Kinematics_Prime_LaunchWeapon.PostEffect(eff, state)--{{{
     local script = "Kinematics_Prime_LaunchWeapon.RestoreUnit("..save_table(state)..")"
     eff:AddScript(script)
     local impact_damage = SpaceDamage(state.Space, 2)
-    local pawn = Board:GetPawn(state.Id)
-    if Board:IsBlocked(state.Space, pawn:GetPathProf()) then
+    local pathprof = Board:GetPawn(state.Id):GetPathProf()
+    local pawn = Board:GetPawn(state.Space)
+    if Board:IsBlocked(state.Space, pathprof) then
         if Kinematics_Prime_LaunchWeapon.pawn_shield_should_trigger(state, pawn) then
             eff:AddScript("Board:AddAlert("..state.Space:GetString()..", \"ALERT_COLLISION_SHIELDED\")")
             eff:AddScript("Board:GetPawn("..state.Id.."):Kill(true)")

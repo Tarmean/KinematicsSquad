@@ -100,68 +100,47 @@ function Kinematics_Shield_Passive.SpawnShields(tiles, ret, shield, source)
     for _, s in ipairs(tiles) do
         local none_shielded = true
         for _, t in ipairs(s) do
-            local pawn_at_loc = sim:PawnAt(t.Space)
-
-            local action
-            if sim:CheckSpaceFree(t.Space, PATH_GROUND) == Simulation.VALID then
-                sim:AddPawn(shield, t.Space)
-                action = "SPAWN"
-            elseif pawn_at_loc and pawn_at_loc:GetType() == shield then
-                action = "HEAL"
-            elseif not pawn_at_loc or (pawn_at_loc:IsGuarding() and pawn_at_loc:IsPlayer()) then
-                action = "SHIELD"
-            else
-                action = "NONE"
-            end
-            local dir = t.Dir
-            if pawn_at_loc and pawn_at_loc:HasMoved() then
-                dir = DIR_NONE
-            end
-            local damage = SpaceDamage(t.Space, DAMAGE_ZERO, dir)
-            if action == "SPAWN" or action == "SHIELD" then
-                local terr = sim:TerrainAt(t.Space)
-                if terr ~= TERRAIN_HOLE and terr ~= TERRAIN_ACID and terr ~= TERRAIN_LAVA and terr ~= TERRAIN_WATER then
-                    none_shielded = false
-                    damage.sImageMark = "combat/shield_front.png"
-                end
-            end
             if Board:IsValid(t.Space) then 
+                local dir = t.Dir
+                if pawn_at_loc and pawn_at_loc:HasMoved() then
+                    dir = DIR_NONE
+                end
+                local damage = SpaceDamage(t.Space, DAMAGE_ZERO, dir)
+                local pawn_at_loc = sim:PawnAt(t.Space)
+
+                local trigger_shield
+                if sim:CheckSpaceFree(t.Space, PATH_GROUND) == Simulation.VALID then
+                    -- SPAWN shield pawn
+                    damage.sPawn = shield
+                    trigger_shield = true
+                    none_shielded = false
+                elseif pawn_at_loc and (pawn_at_loc:GetType() == shield) then
+                    -- HEAL already existing shield pawn
+                    damage.iDamage = -2
+                    damage.bHide = true
+                    none_shielded = false
+                elseif not pawn_at_loc or (pawn_at_loc:IsGuarding() and pawn_at_loc:IsPlayer()) then
+                    -- SHIELD building/mountain or interactive 'building'
+                    damage.iShield = EFFECT_CREATE
+                    none_shielded = false
+                end
+                damage.sSound = "/props/shield_activated"
                 ret:AddDamage(damage)
-                Kinematics_Shield_Passive.DoShield(t.Space, ret, shield, action)
+                if trigger_shield then
+                    ret:AddScript("Kinematics_Shield_Passive.DoSpawn("..t.Space:GetString() .. ")")
+                end
+                ret:AddBounce(t.Space, -3)
             end
         end
         ret:AddDelay(none_shielded and NO_DELAY or FULL_DELAY)
     end
-    if source and Board:GetPawn(source) then
-        Attack:SetSim(source, sim)
-    end
 end
 
-function Kinematics_Shield_Passive.DoShield(p, ret, shield, action)
-    local damage = SpaceDamage(p)
-    damage.sScript = "Kinematics_Shield_Passive.DoSpawn("..p:GetString() .. ",\""..shield.."\",\"" .. action .."\")"
-    damage.sSound = "/props/shield_activated"
-    ret:AddDamage(damage)
-    ret:AddBounce(p, -3)
-end
-function Kinematics_Shield_Passive.DoSpawn(p, shield, action)
-    if action == "SPAWN" then
-        local pawn = PAWN_FACTORY:CreatePawn(shield)
-        Board:AddPawn(pawn, p)
-        pawn:FireWeapon(p, 1)
-    elseif action == "SHIELD" then
-        local dam = SpaceDamage(p)
-        dam.iShield = 1
-        Board:DamageSpace(dam)
-    elseif action == "HEAL" then
-        local dam = SpaceDamage(p, -2)
-        Board:DamageSpace(dam)
-    end
+function Kinematics_Shield_Passive.DoSpawn(p)
+    local pawn = Board:GetPawn(p)
+    pawn:FireWeapon(p, 1)
 end
 function Kinematics_Shield_Passive_Tooltip:GetSkillEffect(p1, p2)
-    if not PassiveType() then
-        Board:GetPawn(p1):AddWeapon("Kinematics_Shield_Passive")
-    end
     return Science_Shield:GetSkillEffect(p1, p2)
 
 end

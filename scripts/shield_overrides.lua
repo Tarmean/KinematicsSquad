@@ -19,7 +19,7 @@ function Science_Shield:GetSkillEffect(p1, p2)
     if self.WideArea then 
         full_tiles = {tiles, {{ Space = p2, Dir = DIR_NONE}}}
     else
-        tiles[#tiles+1] = {Space = p2, Dir = (direction+2%4)}
+        tiles[#tiles+1] = {Space = p2, Dir = ((direction+2)%4)}
         full_tiles = {tiles}
     end
     Kinematics_Shield_Passive.Activate(full_tiles, ret, p1)
