@@ -1,6 +1,6 @@
 # KinematicsSquad
 
-Kinematics mod that adds a new squad.
+Into the Breach mod that adds a new squad.
 
 [![Gameplay Video](http://i3.ytimg.com/vi/Tv70Kohokrk/hqdefault.jpg)](https://www.youtube.com/watch?v=Tv70Kohokrk)
 
